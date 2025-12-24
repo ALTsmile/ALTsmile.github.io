@@ -1280,7 +1280,7 @@ pre code {
   vertical-align: middle;
 }
 .links-of-author a::before {
-  background: #12dab4;
+  background: #21ff4d;
   display: inline-block;
   margin-right: 3px;
   transform: translateY(-2px);
@@ -2567,4 +2567,11 @@ header.header {
   .sidebar-active .footer-fixed {
     left: 320px;
   }
+}
+/* 柔和浅蓝渐变背景 */
+body {
+  background: linear-gradient(135deg, #f5f9ff 0%, #f0f8ff 25%, #e6f7ff 50%, #e0f7fa 75%, #e1f5fe 100%) !important;
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: #2c3e50;
 }
