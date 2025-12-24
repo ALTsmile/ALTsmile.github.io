@@ -1325,7 +1325,7 @@ pre code {
     transition: all 0.2s ease-in-out;
   }
   .links-of-author a::before {
-    background: #4effff;
+    background: #b3ff85;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -2850,4 +2850,14 @@ body {
   background-attachment: fixed;
   min-height: 100vh;
   color: #2c3e50;
+}
+/* 置顶样式优化 */
+.post-meta-item .fa-thumb-tack {
+  color: #7d26cd;
+  font-weight: bold;
+}
+/* 置顶标签样式 */
+.post-meta-item[class*="sticky"] {
+  color: #7d26cd;
+  font-weight: bold;
 }
