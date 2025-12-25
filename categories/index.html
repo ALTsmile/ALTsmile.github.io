@@ -668,10 +668,8 @@ let dragStartX = 0;
 let dragStartProgress = 0;
 let isDraggingFromAvatar = false;
 
-// 修复1: 伪随机播放相关变量
-let randomPlayHistory = []; // 播放历史记录
-let remainingSongs = [];    // 剩余未播放的歌曲
-let currentRandomIndex = 0; // 当前随机播放的索引
+// 修复2: 简单随机播放，避免连续播放同一首
+let lastRandomIndex = -1; // 记录上一次随机播放的索引
 
 // 你的音乐列表
 const musicList = [
@@ -727,9 +725,7 @@ function initMusicPlayer() {
     controls: false
   });
 
-  // 修复1: 初始化伪随机播放列表
-  initRandomPlaylist();
-
+  // 修复1: 重新设置单曲循环事件处理
   ap.on('play', () => {
     isPlaying = true;
     updatePlayButton();
@@ -770,65 +766,6 @@ function initMusicPlayer() {
   positionPanel();
   updatePlayModeUI();
   hidePanel();
-}
-
-// 修复2: 初始化伪随机播放列表
-function initRandomPlaylist() {
-  // 创建0到musicList.length-1的数组
-  remainingSongs = Array.from({length: musicList.length}, (_, i) => i);
-  randomPlayHistory = [];
-  currentRandomIndex = 0;
-  
-  // 打乱数组
-  shuffleArray(remainingSongs);
-}
-
-// 修复2: 随机打乱数组
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-// 修复2: 获取下一首伪随机歌曲
-function getNextRandomTrack() {
-  // 如果剩余歌曲为空，重新初始化
-  if (remainingSongs.length === 0) {
-    initRandomPlaylist();
-  }
-  
-  // 获取当前歌曲
-  const trackIndex = remainingSongs[currentRandomIndex];
-  currentRandomIndex++;
-  
-  // 添加到播放历史
-  randomPlayHistory.push(trackIndex);
-  
-  // 如果到达剩余歌曲末尾，重新初始化
-  if (currentRandomIndex >= remainingSongs.length) {
-    initRandomPlaylist();
-  }
-  
-  return trackIndex;
-}
-
-// 修复2: 获取上一首伪随机歌曲
-function getPrevRandomTrack() {
-  // 如果有播放历史，返回上一首
-  if (randomPlayHistory.length > 0) {
-    // 移除当前歌曲
-    randomPlayHistory.pop();
-    
-    // 如果还有历史记录，返回上一首
-    if (randomPlayHistory.length > 0) {
-      return randomPlayHistory[randomPlayHistory.length - 1];
-    }
-  }
-  
-  // 否则随机选择一首
-  return Math.floor(Math.random() * musicList.length);
 }
 
 function setupEventListeners() {
@@ -1166,16 +1103,9 @@ function renderPlaylist() {
 }
 
 function playTrack(index) {
-  // 修复2: 如果是从播放列表点击播放，重置伪随机播放
+  // 记录当前播放的歌曲索引
   if (playMode === 'random') {
-    // 从播放历史中移除当前歌曲之后的所有歌曲
-    const currentIndex = randomPlayHistory.indexOf(index);
-    if (currentIndex !== -1) {
-      randomPlayHistory = randomPlayHistory.slice(0, currentIndex + 1);
-    } else {
-      // 如果点击的歌曲不在历史中，添加到历史
-      randomPlayHistory.push(index);
-    }
+    lastRandomIndex = index;
   }
   
   ap.list.switch(index);
@@ -1226,9 +1156,14 @@ function updateAvatarPlayButton() {
 
 function previousTrack() {
   if (playMode === 'random') {
-    // 修复2: 伪随机播放的上一首
-    const prevIndex = getPrevRandomTrack();
-    playTrack(prevIndex);
+    // 修复2: 随机播放的上一首 - 简单的随机选择
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * musicList.length);
+    } while (musicList.length > 1 && randomIndex === lastRandomIndex);
+    
+    lastRandomIndex = randomIndex;
+    playTrack(randomIndex);
   } else {
     ap.skipBack();
     if (!isPlaying) ap.play();
@@ -1239,9 +1174,14 @@ function previousTrack() {
 
 function nextTrack() {
   if (playMode === 'random') {
-    // 修复2: 伪随机播放的下一首
-    const nextIndex = getNextRandomTrack();
-    playTrack(nextIndex);
+    // 修复2: 随机播放的下一首 - 避免连续播放同一首
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * musicList.length);
+    } while (musicList.length > 1 && randomIndex === lastRandomIndex);
+    
+    lastRandomIndex = randomIndex;
+    playTrack(randomIndex);
   } else {
     ap.skipForward();
     if (!isPlaying) ap.play();
@@ -1261,13 +1201,13 @@ function changePlayMode() {
   const nextIndex = (currentIndex + 1) % modes.length;
   playMode = modes[nextIndex].id;
   
-  // 修复1: 单曲循环设置
+  // 修复1: 正确设置播放模式
   if (playMode === 'repeat') {
     ap.loop = 'one'; // 设置APlayer为单曲循环
   } else if (playMode === 'random') {
     ap.loop = 'all'; // 随机播放时设置为全部循环
-    // 修复2: 初始化伪随机播放
-    initRandomPlaylist();
+    // 修复2: 初始化随机播放
+    lastRandomIndex = -1;
   } else {
     ap.loop = 'all'; // 列表循环设置为全部循环
   }
@@ -1276,14 +1216,25 @@ function changePlayMode() {
   showPanel();
 }
 
+// 修复1: 单曲循环处理
 function handleTrackEnded() {
+  console.log('歌曲播放结束，当前播放模式:', playMode);
+  
   if (playMode === 'repeat') {
     // 修复1: 单曲循环 - 重新播放当前歌曲
-    ap.play();
+    console.log('单曲循环模式，重新播放当前歌曲');
+    setTimeout(() => {
+      ap.play();
+    }, 100);
   } else if (playMode === 'random') {
-    // 修复2: 伪随机播放下一首
-    const nextIndex = getNextRandomTrack();
-    playTrack(nextIndex);
+    // 修复2: 随机播放下一首，避免连续播放同一首
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * musicList.length);
+    } while (musicList.length > 1 && randomIndex === lastRandomIndex);
+    
+    lastRandomIndex = randomIndex;
+    playTrack(randomIndex);
   } else {
     // 列表循环
     nextTrack();
