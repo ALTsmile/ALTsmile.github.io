@@ -686,6 +686,8 @@ let isSeeking = false;
 let isDraggingProgress = false;
 let lastRandomIndex = -1;
 let currentTrackIndex = 0;
+let isManualNext = false; // 标记是否是手动点击下一首
+let repeatResetTimeout = null; // 单曲循环重置计时器
 
 // 自动计算当前页面的基础路径
 function getBasePath() {
@@ -762,12 +764,12 @@ function initMusicPlayer() {
     };
   });
   
-  // 修复：使用简单的初始化配置
+  // 初始化 APlayer
   ap = new APlayer({
     container: document.getElementById('aplayer-hidden-container'),
     audio: correctedMusicList,
     theme: '#667eea',
-    loop: 'all', // 初始设置为全部循环
+    loop: 'all', // 始终设置为全部循环
     order: 'list',
     preload: 'auto',
     volume: currentVolume,
@@ -796,10 +798,46 @@ function initMusicPlayer() {
     updateTrackInfo();
   });
   
-  // 修复：监听 timeupdate 更新进度
+  // 监听 timeupdate 更新进度和检测歌曲结束
+  let isNearEnd = false;
   ap.on('timeupdate', () => {
     if (!isSeeking && !isDraggingProgress) {
       updateProgress();
+    }
+    
+    // 检测歌曲是否接近结束（用于单曲循环）
+    if (ap.audio && ap.audio.duration) {
+      const currentTime = ap.audio.currentTime;
+      const duration = ap.audio.duration;
+      const remaining = duration - currentTime;
+      
+      // 如果歌曲接近结束（最后0.5秒），并且是单曲循环模式
+      if (playMode === 'repeat' && remaining < 0.5 && !isNearEnd && !isManualNext) {
+        isNearEnd = true;
+        console.log('单曲循环：检测到歌曲即将结束，准备重新播放');
+        
+        // 清除之前的定时器
+        if (repeatResetTimeout) {
+          clearTimeout(repeatResetTimeout);
+        }
+        
+        // 延迟一点后重置到开始位置并重新播放
+        repeatResetTimeout = setTimeout(() => {
+          if (playMode === 'repeat' && !isManualNext) {
+            console.log('单曲循环：重置到开始位置');
+            ap.seek(0);
+            
+            // 延迟一点后重新播放
+            setTimeout(() => {
+              if (isPlaying) {
+                ap.play();
+                console.log('单曲循环：重新播放歌曲');
+              }
+            }, 100);
+          }
+          isNearEnd = false;
+        }, 600);
+      }
     }
   });
   
@@ -814,11 +852,10 @@ function initMusicPlayer() {
   // 监听歌曲切换
   ap.on('listswitch', (index) => {
     currentTrackIndex = index.item;
+    isManualNext = false; // 重置手动切换标记
     updateTrackInfo();
     updateActivePlaylistItem(index.item);
   });
-  
-  // 修复：不监听 ended 事件，让 APlayer 自己处理
   
   // 初始化 UI
   renderPlaylist();
@@ -936,6 +973,7 @@ function setupEventListeners() {
 
   prevBtn.addEventListener('click', function(e) {
     e.stopPropagation();
+    isManualNext = true; // 标记为手动切换
     previousTrack();
   });
 
@@ -946,6 +984,7 @@ function setupEventListeners() {
 
   nextBtn.addEventListener('click', function(e) {
     e.stopPropagation();
+    isManualNext = true; // 标记为手动切换
     nextTrack();
   });
 
@@ -1148,6 +1187,7 @@ function renderPlaylist() {
 
 function playTrack(index) {
   currentTrackIndex = index;
+  isManualNext = true; // 标记为手动切换
   
   if (playMode === 'random') {
     lastRandomIndex = index;
@@ -1244,17 +1284,12 @@ function changePlayMode() {
   const nextIndex = (currentIndex + 1) % modes.length;
   playMode = modes[nextIndex].id;
   
-  // 修复：正确设置 APlayer 的 loop 模式
-  if (playMode === 'repeat') {
-    // 单曲循环模式
-    ap.loop = 'one';
-  } else if (playMode === 'random') {
-    // 随机播放模式
-    ap.loop = 'all'; // 随机播放也需要全部循环
+  // 始终设置 APlayer 为全部循环
+  ap.loop = 'all';
+  
+  if (playMode === 'random') {
+    // 初始化随机播放
     lastRandomIndex = -1;
-  } else {
-    // 列表循环模式
-    ap.loop = 'all';
   }
   
   updatePlayModeUI();
