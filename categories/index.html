@@ -668,8 +668,8 @@ let dragStartX = 0;
 let dragStartProgress = 0;
 let isDraggingFromAvatar = false;
 
-// 修复2: 简单随机播放，避免连续播放同一首
-let lastRandomIndex = -1; // 记录上一次随机播放的索引
+// 随机播放相关变量
+let lastRandomIndex = -1;
 
 // 你的音乐列表
 const musicList = [
@@ -709,11 +709,12 @@ function initMusicPlayer() {
   playerContainer.style.display = 'none';
   document.body.appendChild(playerContainer);
   
+  // 修复：始终设置为 'all' 循环，我们自己控制单曲循环
   ap = new APlayer({
     container: document.getElementById('aplayer-hidden-container'),
     audio: musicList,
     theme: '#667eea',
-    loop: 'all', // 先设置为全部循环
+    loop: 'all', // 始终使用全部循环，我们自己控制单曲循环
     order: 'list',
     preload: 'auto',
     volume: currentVolume,
@@ -725,7 +726,7 @@ function initMusicPlayer() {
     controls: false
   });
 
-  // 修复1: 重新设置单曲循环事件处理
+  // 事件监听
   ap.on('play', () => {
     isPlaying = true;
     updatePlayButton();
@@ -742,7 +743,7 @@ function initMusicPlayer() {
     updateTrackInfo();
   });
 
-  // 修复1: 单曲循环处理
+  // 修复：手动处理单曲循环
   ap.on('ended', () => {
     handleTrackEnded();
   });
@@ -1156,7 +1157,7 @@ function updateAvatarPlayButton() {
 
 function previousTrack() {
   if (playMode === 'random') {
-    // 修复2: 随机播放的上一首 - 简单的随机选择
+    // 随机播放的上一首
     let randomIndex;
     do {
       randomIndex = Math.floor(Math.random() * musicList.length);
@@ -1174,7 +1175,7 @@ function previousTrack() {
 
 function nextTrack() {
   if (playMode === 'random') {
-    // 修复2: 随机播放的下一首 - 避免连续播放同一首
+    // 随机播放的下一首 - 避免连续播放同一首
     let randomIndex;
     do {
       randomIndex = Math.floor(Math.random() * musicList.length);
@@ -1201,33 +1202,35 @@ function changePlayMode() {
   const nextIndex = (currentIndex + 1) % modes.length;
   playMode = modes[nextIndex].id;
   
-  // 修复1: 正确设置播放模式
-  if (playMode === 'repeat') {
-    ap.loop = 'one'; // 设置APlayer为单曲循环
-  } else if (playMode === 'random') {
-    ap.loop = 'all'; // 随机播放时设置为全部循环
-    // 修复2: 初始化随机播放
-    lastRandomIndex = -1;
-  } else {
-    ap.loop = 'all'; // 列表循环设置为全部循环
-  }
+  // 注意：我们不依赖 APlayer 的单曲循环，我们自己控制
+  // 所以 loop 始终设置为 'all'
+  ap.loop = 'all';
   
   updatePlayModeUI();
   showPanel();
 }
 
-// 修复1: 单曲循环处理
+// 修复：手动处理单曲循环
 function handleTrackEnded() {
-  console.log('歌曲播放结束，当前播放模式:', playMode);
+  console.log('歌曲播放结束，当前播放模式:', playMode, '当前歌曲索引:', ap.list.index);
   
   if (playMode === 'repeat') {
-    // 修复1: 单曲循环 - 重新播放当前歌曲
-    console.log('单曲循环模式，重新播放当前歌曲');
+    // 单曲循环模式 - 手动重新播放当前歌曲
+    console.log('单曲循环模式，手动重新播放当前歌曲');
+    
+    // 先暂停
+    ap.pause();
+    
+    // 重置到开始位置
+    ap.seek(0);
+    
+    // 延迟一点后重新播放
     setTimeout(() => {
       ap.play();
-    }, 100);
+      console.log('重新播放当前歌曲');
+    }, 300);
   } else if (playMode === 'random') {
-    // 修复2: 随机播放下一首，避免连续播放同一首
+    // 随机播放下一首，避免连续播放同一首
     let randomIndex;
     do {
       randomIndex = Math.floor(Math.random() * musicList.length);
