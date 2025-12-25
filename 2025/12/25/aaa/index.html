@@ -689,7 +689,8 @@ let isDraggingProgress = false;
 let lastRandomIndex = -1;
 let currentTrackIndex = 0;
 let repeatTimeout = null; // 单曲循环计时器
-let isManualNext = false; // 标记是否是手动切换
+let isManualSwitch = false; // 标记是否是手动切换
+let isProcessingEnd = false; // 防止重复处理结束事件
 
 // 自动计算当前页面的基础路径
 function getBasePath() {
@@ -766,12 +767,12 @@ function initMusicPlayer() {
     };
   });
   
-  // 修复：初始化 APlayer 为无循环模式
+  // 修复：使用正确的循环设置
   ap = new APlayer({
     container: document.getElementById('aplayer-hidden-container'),
     audio: correctedMusicList,
     theme: '#667eea',
-    loop: 'none', // 关键：设置为无循环
+    loop: 'all', // 列表循环模式
     order: 'list',
     preload: 'auto',
     volume: currentVolume,
@@ -800,46 +801,6 @@ function initMusicPlayer() {
     updateTrackInfo();
   });
   
-  // 修复：监听 ended 事件来处理所有循环逻辑
-  ap.on('ended', () => {
-    console.log('歌曲播放结束，当前模式:', playMode);
-    
-    if (playMode === 'repeat') {
-      // 单曲循环：重新播放当前歌曲
-      console.log('单曲循环：重新播放当前歌曲');
-      setTimeout(() => {
-        ap.seek(0);
-        setTimeout(() => {
-          ap.play();
-          console.log('单曲循环：已重新播放');
-        }, 100);
-      }, 300);
-    } else if (playMode === 'random') {
-      // 随机播放：播放下一首随机歌曲
-      console.log('随机播放：播放下一首随机歌曲');
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * musicList.length);
-      } while (musicList.length > 1 && randomIndex === lastRandomIndex);
-      
-      lastRandomIndex = randomIndex;
-      playTrack(randomIndex);
-    } else {
-      // 列表循环：播放下一首
-      console.log('列表循环：播放下一首');
-      const currentIndex = ap.list.index;
-      const nextIndex = (currentIndex + 1) % musicList.length;
-      
-      setTimeout(() => {
-        ap.list.switch(nextIndex);
-        setTimeout(() => {
-          ap.play();
-          console.log('列表循环：已播放下一首');
-        }, 100);
-      }, 300);
-    }
-  });
-  
   // 监听 timeupdate 更新进度
   ap.on('timeupdate', () => {
     if (!isSeeking && !isDraggingProgress) {
@@ -860,11 +821,32 @@ function initMusicPlayer() {
     currentTrackIndex = index.item;
     updateTrackInfo();
     updateActivePlaylistItem(index.item);
+  });
+  
+  // 修复：在 ended 事件中处理单曲循环
+  ap.on('ended', () => {
+    if (isProcessingEnd) return;
     
-    // 清除单曲循环计时器
-    if (repeatTimeout) {
-      clearTimeout(repeatTimeout);
+    console.log('歌曲播放结束，当前模式:', playMode);
+    
+    if (playMode === 'repeat') {
+      // 单曲循环：重新播放当前歌曲
+      console.log('单曲循环：准备重新播放');
+      isProcessingEnd = true;
+      
+      // 重置到开始位置
+      setTimeout(() => {
+        ap.seek(0);
+        setTimeout(() => {
+          if (isPlaying) {
+            ap.play();
+            console.log('单曲循环：已重新播放');
+          }
+          isProcessingEnd = false;
+        }, 100);
+      }, 300);
     }
+    // 列表循环和随机播放由 APlayer 的 loop: 'all' 自动处理
   });
   
   // 初始化 UI
@@ -983,7 +965,7 @@ function setupEventListeners() {
 
   prevBtn.addEventListener('click', function(e) {
     e.stopPropagation();
-    isManualNext = true;
+    isManualSwitch = true;
     previousTrack();
   });
 
@@ -994,7 +976,7 @@ function setupEventListeners() {
 
   nextBtn.addEventListener('click', function(e) {
     e.stopPropagation();
-    isManualNext = true;
+    isManualSwitch = true;
     nextTrack();
   });
 
@@ -1197,7 +1179,7 @@ function renderPlaylist() {
 
 function playTrack(index) {
   currentTrackIndex = index;
-  isManualNext = true;
+  isManualSwitch = true;
   
   if (playMode === 'random') {
     lastRandomIndex = index;
@@ -1294,12 +1276,17 @@ function changePlayMode() {
   const nextIndex = (currentIndex + 1) % modes.length;
   playMode = modes[nextIndex].id;
   
-  // 修复：始终保持 APlayer 为无循环模式
-  ap.loop = 'none';
-  
-  if (playMode === 'random') {
-    // 初始化随机播放
+  // 修复：根据播放模式设置 APlayer 的 loop
+  if (playMode === 'repeat') {
+    // 单曲循环：设置为无循环，我们自己处理
+    ap.loop = 'none';
+  } else if (playMode === 'random') {
+    // 随机播放：设置为全部循环
+    ap.loop = 'all';
     lastRandomIndex = -1;
+  } else {
+    // 列表循环：设置为全部循环
+    ap.loop = 'all';
   }
   
   updatePlayModeUI();
