@@ -332,7 +332,11 @@ body > .music-avatar-container {
   max-height: 180px;
 }
 
-/* 修复滚动传递问题 */
+/* 修复1: 滚动传递问题 - 添加阻止事件传递 */
+.playlist-items {
+  overscroll-behavior: contain; /* 阻止滚动链 */
+}
+
 .playlist-items::-webkit-scrollbar {
   width: 6px;
 }
@@ -504,41 +508,41 @@ body > .music-avatar-container {
 }
 
 .progress-bar {
-  height: 6px;
+  height: 4px; /* 稍微减小高度 */
   background: #e8e8e8;
-  border-radius: 3px;
+  border-radius: 2px;
   cursor: pointer;
   position: relative;
   user-select: none;
-  touch-action: none; /* 防止触摸滚动干扰 */
+  touch-action: none;
 }
 
 .progress {
   height: 100%;
   background: linear-gradient(90deg, #667eea, #764ba2);
   width: 0%;
-  border-radius: 3px;
+  border-radius: 2px;
   position: relative;
   transition: width 0.1s linear;
-  pointer-events: none; /* 防止拖拽干扰 */
+  pointer-events: none;
 }
 
-/* 进度条拖拽点 - 修复大小和位置 */
+/* 进度条拖拽点 - 修复1: 缩小大小 */
 .progress::after {
   content: '';
   position: absolute;
-  right: -6px;  /* 修复位置，确保在进度条末尾 */
+  right: -5px;  /* 调整位置 */
   top: 50%;
   transform: translateY(-50%);
-  width: 12px;  /* 固定大小 */
-  height: 12px; /* 固定大小 */
+  width: 10px;  /* 缩小到10px */
+  height: 10px; /* 缩小到10px */
   background: white;
   border: 2px solid #667eea;
   border-radius: 50%;
   opacity: 0;
   transition: opacity 0.2s, transform 0.2s;
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  pointer-events: none; /* 防止点击干扰 */
+  pointer-events: none;
 }
 
 .progress-bar:hover .progress::after,
@@ -767,12 +771,31 @@ function setupEventListeners() {
   const mainBtn = document.getElementById('main-play-btn');
   const nextBtn = document.getElementById('next-btn');
 
-  // 修复1: 滚动传递问题
+  // 修复2: 滚动传递问题 - 使用更可靠的方法
   playlistItems.addEventListener('wheel', function(e) {
+    // 检查是否已滚动到底部或顶部
+    const isAtBottom = this.scrollHeight - this.scrollTop <= this.clientHeight + 1;
+    const isAtTop = this.scrollTop === 0;
+    
+    // 如果已滚动到底部还想继续向下滚动，阻止事件传递
+    if (isAtBottom && e.deltaY > 0) {
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }
+    
+    // 如果已滚动到顶部还想继续向上滚动，阻止事件传递
+    if (isAtTop && e.deltaY < 0) {
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }
+    
+    // 否则允许滚动
     e.stopPropagation();
   }, { passive: false });
 
-  // 修复2: 封面鼠标离开立即隐藏面板
+  // 封面鼠标事件
   avatar.addEventListener('mouseenter', function(e) {
     e.stopPropagation();
     isDraggingFromAvatar = false;
@@ -794,10 +817,36 @@ function setupEventListeners() {
     isDraggingFromAvatar = false;
   });
 
-  // 修复3: 进度条拖拽功能 - 简化版
-  progressBar.addEventListener('mousedown', handleProgressStart);
-  document.addEventListener('mousemove', handleProgressMove);
-  document.addEventListener('mouseup', handleProgressEnd);
+  // 修复1: 进度条拖拽功能 - 简化版本
+  progressBar.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!ap.audio || !ap.audio.duration) return;
+    
+    isDraggingProgress = true;
+    progressBar.classList.add('dragging');
+    isSeeking = true;
+    
+    const rect = progressBar.getBoundingClientRect();
+    const x = e.clientX;
+    
+    // 直接计算点击位置对应的百分比
+    const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+    
+    // 立即更新显示
+    updateProgressDisplay(percent);
+    
+    // 记录当前播放状态
+    const wasPlaying = isPlaying;
+    if (wasPlaying) {
+      ap.pause(); // 暂停播放以便拖拽
+    }
+    
+    // 为移动事件添加监听
+    document.addEventListener('mousemove', handleProgressDragMove);
+    document.addEventListener('mouseup', handleProgressDragEnd);
+  });
 
   // 进度条点击
   progressBar.addEventListener('click', function(e) {
@@ -858,52 +907,26 @@ function setupEventListeners() {
   });
 }
 
-// 进度条拖拽功能 - 修复版
-function handleProgressStart(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  
-  if (!ap.audio || !ap.audio.duration) return;
-  
-  isDraggingProgress = true;
-  progressBar.classList.add('dragging');
-  isSeeking = true;
-  
-  const rect = progressBar.getBoundingClientRect();
-  const x = e.clientX;
-  const percent = (x - rect.left) / rect.width;
-  const clampedPercent = Math.max(0, Math.min(1, percent));
-  
-  // 记录开始位置
-  dragStartX = x;
-  dragStartProgress = (ap.audio.currentTime || 0) / ap.audio.duration;
-  
-  // 如果是点击拖拽（不是从其他地方拖过来的），直接更新
-  updateProgressDisplay(clampedPercent);
-  
-  // 暂停播放以便拖拽
-  const wasPlaying = isPlaying;
-  if (wasPlaying) {
-    ap.pause();
-  }
-}
-
-function handleProgressMove(e) {
+// 进度条拖拽移动
+function handleProgressDragMove(e) {
   if (!isDraggingProgress || !ap.audio || !ap.audio.duration) return;
   
   e.preventDefault();
   e.stopPropagation();
   
+  const progressBar = document.getElementById('progress-bar');
   const rect = progressBar.getBoundingClientRect();
   const x = e.clientX;
-  const percent = (x - rect.left) / rect.width;
-  const clampedPercent = Math.max(0, Math.min(1, percent));
   
-  // 更新进度显示
-  updateProgressDisplay(clampedPercent);
+  // 计算鼠标位置对应的百分比
+  const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+  
+  // 实时更新显示
+  updateProgressDisplay(percent);
 }
 
-function handleProgressEnd(e) {
+// 进度条拖拽结束
+function handleProgressDragEnd(e) {
   if (!isDraggingProgress || !ap.audio || !ap.audio.duration) return;
   
   e.preventDefault();
@@ -912,11 +935,11 @@ function handleProgressEnd(e) {
   isDraggingProgress = false;
   progressBar.classList.remove('dragging');
   
+  const progressBar = document.getElementById('progress-bar');
   const rect = progressBar.getBoundingClientRect();
   const x = e.clientX;
-  const percent = (x - rect.left) / rect.width;
-  const clampedPercent = Math.max(0, Math.min(1, percent));
-  const targetTime = clampedPercent * ap.audio.duration;
+  const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+  const targetTime = percent * ap.audio.duration;
   
   // 跳转到指定时间
   ap.seek(targetTime);
@@ -927,6 +950,10 @@ function handleProgressEnd(e) {
       ap.play();
     }, 10);
   }
+  
+  // 清除事件监听
+  document.removeEventListener('mousemove', handleProgressDragMove);
+  document.removeEventListener('mouseup', handleProgressDragEnd);
   
   // 清除 seeking 标记
   setTimeout(() => {
