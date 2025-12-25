@@ -203,10 +203,16 @@
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   overflow: hidden;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .advanced-music-player:hover {
   box-shadow: 0 6px 30px rgba(0,0,0,0.15);
+}
+
+/* 隐藏 APlayer 默认界面 */
+.advanced-music-player .aplayer {
+  display: none !important;
 }
 
 /* 播放器头部 */
@@ -325,7 +331,7 @@
   margin-bottom: 8px;
 }
 
-/* 进度条样式 */
+/* 进度条样式 - 修复版 */
 .progress-container {
   width: 100%;
   margin: 10px 0;
@@ -352,7 +358,7 @@
   width: 0%;
   border-radius: 3px;
   position: relative;
-  transition: width 0.1s;
+  transition: width 0.1s linear;
 }
 
 .progress::after {
@@ -369,6 +375,7 @@
   opacity: 0;
   transition: opacity 0.2s, transform 0.2s;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  z-index: 10;
 }
 
 .progress-bar:hover .progress::after {
@@ -829,8 +836,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initPlayer() {
+  // 隐藏 APlayer 容器
+  const playerContainer = document.createElement('div');
+  playerContainer.id = 'aplayer-hidden-container';
+  playerContainer.style.display = 'none';
+  document.getElementById('advanced-music-player').appendChild(playerContainer);
+  
   ap = new APlayer({
-    container: document.getElementById('advanced-music-player'),
+    container: document.getElementById('aplayer-hidden-container'),
     audio: musicList,
     theme: '#667eea',
     loop: 'all',
@@ -842,7 +855,7 @@ function initPlayer() {
     fixed: false,
     mini: false,
     autoplay: false,
-    controls: false  // 隐藏默认控制条
+    controls: false
   });
 
   // 事件监听
@@ -919,6 +932,20 @@ function setupEventListeners() {
     ap.volume(currentVolume);
     updateVolumeUI();
   });
+  
+  // 音量拖拽
+  volumeSlider.addEventListener('mousedown', function(e) {
+    isDragging = true;
+    handleVolumeClick(e);
+  });
+
+  function handleVolumeClick(e) {
+    const rect = volumeSlider.getBoundingClientRect();
+    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    currentVolume = percent;
+    ap.volume(currentVolume);
+    updateVolumeUI();
+  }
 }
 
 function handleProgressClick(e) {
