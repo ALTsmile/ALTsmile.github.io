@@ -176,11 +176,6 @@
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
-      <div class="site-state-item site-state-tags">
-          <a href="/tags/">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">标签</span></a>
-      </div>
   </nav>
 </div>
   <div class="links-of-author animated">
@@ -694,6 +689,7 @@ let isSeeking = false;
 let isDraggingProgress = false;
 let lastRandomIndex = -1;
 let currentTrackIndex = 0;
+let isTrackEnded = false; // 新增：标记歌曲是否已结束
 
 // 自动计算当前页面的基础路径
 function getBasePath() {
@@ -777,12 +773,12 @@ function initMusicPlayer() {
   
   console.log('修正后的音乐列表:', correctedMusicList);
   
-  // 初始化 APlayer
+  // 初始化 APlayer - 修复：设置为 'all' 循环以便列表循环正常工作
   ap = new APlayer({
     container: document.getElementById('aplayer-hidden-container'),
     audio: correctedMusicList,
     theme: '#667eea',
-    loop: 'list',
+    loop: 'all', // 改为 'all' 以便列表循环正常工作
     order: 'list',
     preload: 'auto',
     volume: currentVolume,
@@ -797,6 +793,7 @@ function initMusicPlayer() {
   // 事件监听
   ap.on('play', () => {
     isPlaying = true;
+    isTrackEnded = false; // 重置结束标记
     updatePlayButton();
     updateAvatarPlayButton();
   });
@@ -811,28 +808,17 @@ function initMusicPlayer() {
     updateTrackInfo();
   });
 
-  // 监听歌曲结束
-  let endDetected = false;
+  // 修复：使用 ended 事件来检测歌曲结束
+  ap.on('ended', () => {
+    console.log('歌曲播放结束，当前模式:', playMode);
+    isTrackEnded = true;
+    handleTrackEnded();
+  });
+  
+  // 监听 timeupdate 更新进度
   ap.on('timeupdate', () => {
     if (!isSeeking && !isDraggingProgress) {
       updateProgress();
-    }
-    
-    // 检测歌曲是否播放完毕
-    if (ap.audio && ap.audio.duration) {
-      const currentTime = ap.audio.currentTime;
-      const duration = ap.audio.duration;
-      
-      if (duration - currentTime < 0.5 && !endDetected) {
-        endDetected = true;
-        
-        setTimeout(() => {
-          if (ap.audio.currentTime === 0 || ap.audio.ended) {
-            handleTrackEnded();
-          }
-          endDetected = false;
-        }, 600);
-      }
     }
   });
   
@@ -847,6 +833,7 @@ function initMusicPlayer() {
   // 监听歌曲切换
   ap.on('listswitch', (index) => {
     currentTrackIndex = index.item;
+    isTrackEnded = false; // 重置结束标记
     updateTrackInfo();
     updateActivePlaylistItem(index.item);
   });
@@ -1275,10 +1262,17 @@ function changePlayMode() {
   const nextIndex = (currentIndex + 1) % modes.length;
   playMode = modes[nextIndex].id;
   
+  // 设置 APlayer 循环模式
   if (playMode === 'repeat') {
     // 单曲循环模式
+    ap.loop = 'one';
   } else if (playMode === 'random') {
+    // 随机播放模式
+    ap.loop = 'all';
     lastRandomIndex = -1;
+  } else {
+    // 列表循环模式
+    ap.loop = 'all';
   }
   
   updatePlayModeUI();
@@ -1286,14 +1280,24 @@ function changePlayMode() {
 }
 
 function handleTrackEnded() {
+  console.log('处理歌曲结束，当前模式:', playMode, '歌曲结束标记:', isTrackEnded);
+  
+  if (!isTrackEnded) {
+    console.log('歌曲未真正结束，跳过处理');
+    return;
+  }
+  
   if (playMode === 'repeat') {
-    // 单曲循环
+    // 单曲循环 - 重新播放当前歌曲
+    console.log('单曲循环：重新播放当前歌曲');
     ap.seek(0);
     setTimeout(() => {
       ap.play();
+      console.log('已重新播放歌曲');
     }, 300);
   } else if (playMode === 'random') {
-    // 随机播放
+    // 随机播放 - 播放下一首随机歌曲
+    console.log('随机播放：播放下一首随机歌曲');
     let randomIndex;
     do {
       randomIndex = Math.floor(Math.random() * musicList.length);
@@ -1302,16 +1306,30 @@ function handleTrackEnded() {
     lastRandomIndex = randomIndex;
     playTrack(randomIndex);
   } else {
-    // 列表循环
+    // 列表循环 - 播放下一首
+    console.log('列表循环：播放下一首歌曲');
+    
+    // 手动切换到下一首
+    const currentIndex = ap.list.index;
+    const nextIndex = (currentIndex + 1) % musicList.length;
+    
+    console.log('当前索引:', currentIndex, '下一首索引:', nextIndex);
+    
+    // 先暂停当前播放
+    ap.pause();
+    
+    // 延迟一点后切换到下一首并播放
     setTimeout(() => {
-      if (!isPlaying) {
-        ap.skipForward();
-        if (isPlaying) {
-          ap.play();
-        }
-      }
-    }, 100);
+      ap.list.switch(nextIndex);
+      setTimeout(() => {
+        ap.play();
+        console.log('已播放下一首歌曲');
+      }, 100);
+    }, 300);
   }
+  
+  // 重置结束标记
+  isTrackEnded = false;
 }
 
 function updatePlayModeUI() {
