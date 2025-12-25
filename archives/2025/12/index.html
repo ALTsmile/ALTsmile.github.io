@@ -687,7 +687,7 @@ let isDraggingProgress = false;
 let lastRandomIndex = -1;
 let currentTrackIndex = 0;
 let repeatTimeout = null; // 单曲循环计时器
-let isRepeatModeActive = false; // 标记单曲循环是否激活
+let isManualNext = false; // 标记是否是手动切换
 
 // 自动计算当前页面的基础路径
 function getBasePath() {
@@ -764,12 +764,12 @@ function initMusicPlayer() {
     };
   });
   
-  // 初始化 APlayer - 始终使用全部循环
+  // 修复：初始化 APlayer 为无循环模式
   ap = new APlayer({
     container: document.getElementById('aplayer-hidden-container'),
     audio: correctedMusicList,
     theme: '#667eea',
-    loop: 'all', // 始终设置为全部循环
+    loop: 'none', // 关键：设置为无循环
     order: 'list',
     preload: 'auto',
     volume: currentVolume,
@@ -798,46 +798,50 @@ function initMusicPlayer() {
     updateTrackInfo();
   });
   
+  // 修复：监听 ended 事件来处理所有循环逻辑
+  ap.on('ended', () => {
+    console.log('歌曲播放结束，当前模式:', playMode);
+    
+    if (playMode === 'repeat') {
+      // 单曲循环：重新播放当前歌曲
+      console.log('单曲循环：重新播放当前歌曲');
+      setTimeout(() => {
+        ap.seek(0);
+        setTimeout(() => {
+          ap.play();
+          console.log('单曲循环：已重新播放');
+        }, 100);
+      }, 300);
+    } else if (playMode === 'random') {
+      // 随机播放：播放下一首随机歌曲
+      console.log('随机播放：播放下一首随机歌曲');
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * musicList.length);
+      } while (musicList.length > 1 && randomIndex === lastRandomIndex);
+      
+      lastRandomIndex = randomIndex;
+      playTrack(randomIndex);
+    } else {
+      // 列表循环：播放下一首
+      console.log('列表循环：播放下一首');
+      const currentIndex = ap.list.index;
+      const nextIndex = (currentIndex + 1) % musicList.length;
+      
+      setTimeout(() => {
+        ap.list.switch(nextIndex);
+        setTimeout(() => {
+          ap.play();
+          console.log('列表循环：已播放下一首');
+        }, 100);
+      }, 300);
+    }
+  });
+  
   // 监听 timeupdate 更新进度
-  let isNearEnd = false;
   ap.on('timeupdate', () => {
     if (!isSeeking && !isDraggingProgress) {
       updateProgress();
-    }
-    
-    // 修复：检测歌曲是否接近结束（用于单曲循环）
-    if (ap.audio && ap.audio.duration) {
-      const currentTime = ap.audio.currentTime;
-      const duration = ap.audio.duration;
-      const remaining = duration - currentTime;
-      
-      // 如果歌曲接近结束（最后0.3秒），并且是单曲循环模式
-      if (playMode === 'repeat' && remaining < 0.3 && !isNearEnd) {
-        isNearEnd = true;
-        console.log('单曲循环：检测到歌曲即将结束，准备重新播放');
-        
-        // 清除之前的定时器
-        if (repeatTimeout) {
-          clearTimeout(repeatTimeout);
-        }
-        
-        // 延迟一点后重置到开始位置
-        repeatTimeout = setTimeout(() => {
-          if (playMode === 'repeat') {
-            console.log('单曲循环：重置到开始位置');
-            ap.seek(0);
-            
-            // 延迟一点后重新播放
-            setTimeout(() => {
-              if (isPlaying) {
-                ap.play();
-                console.log('单曲循环：重新播放歌曲');
-              }
-            }, 50);
-          }
-          isNearEnd = false;
-        }, 400);
-      }
     }
   });
   
@@ -858,38 +862,7 @@ function initMusicPlayer() {
     // 清除单曲循环计时器
     if (repeatTimeout) {
       clearTimeout(repeatTimeout);
-      isNearEnd = false;
     }
-  });
-  
-  // 修复：监听 ended 事件作为备份
-  ap.on('ended', () => {
-    console.log('歌曲播放结束，当前模式:', playMode);
-    
-    if (playMode === 'repeat') {
-      // 单曲循环：重新播放
-      setTimeout(() => {
-        console.log('单曲循环（ended事件）：重置到开始位置');
-        ap.seek(0);
-        
-        setTimeout(() => {
-          if (isPlaying) {
-            ap.play();
-            console.log('单曲循环（ended事件）：重新播放歌曲');
-          }
-        }, 100);
-      }, 200);
-    } else if (playMode === 'random') {
-      // 随机播放：播放下一首随机歌曲
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * musicList.length);
-      } while (musicList.length > 1 && randomIndex === lastRandomIndex);
-      
-      lastRandomIndex = randomIndex;
-      playTrack(randomIndex);
-    }
-    // 列表循环：由 APlayer 的 loop: 'all' 自动处理
   });
   
   // 初始化 UI
@@ -1008,6 +981,7 @@ function setupEventListeners() {
 
   prevBtn.addEventListener('click', function(e) {
     e.stopPropagation();
+    isManualNext = true;
     previousTrack();
   });
 
@@ -1018,6 +992,7 @@ function setupEventListeners() {
 
   nextBtn.addEventListener('click', function(e) {
     e.stopPropagation();
+    isManualNext = true;
     nextTrack();
   });
 
@@ -1220,6 +1195,7 @@ function renderPlaylist() {
 
 function playTrack(index) {
   currentTrackIndex = index;
+  isManualNext = true;
   
   if (playMode === 'random') {
     lastRandomIndex = index;
@@ -1316,8 +1292,8 @@ function changePlayMode() {
   const nextIndex = (currentIndex + 1) % modes.length;
   playMode = modes[nextIndex].id;
   
-  // 始终设置 APlayer 为全部循环
-  ap.loop = 'all';
+  // 修复：始终保持 APlayer 为无循环模式
+  ap.loop = 'none';
   
   if (playMode === 'random') {
     // 初始化随机播放
