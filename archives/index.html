@@ -320,7 +320,7 @@
   margin-bottom: 8px;
 }
 
-/* 进度条 */
+/* 进度条样式 */
 .progress-container {
   width: 100%;
   margin: 10px 0;
@@ -328,38 +328,47 @@
 
 .progress-bar {
   width: 100%;
-  height: 4px;
+  height: 6px;
   background: #e0e0e0;
-  border-radius: 2px;
+  border-radius: 3px;
   overflow: hidden;
   cursor: pointer;
   position: relative;
+  transition: height 0.2s;
+}
+
+.progress-bar:hover {
+  height: 8px;
 }
 
 .progress {
   height: 100%;
   background: linear-gradient(90deg, #667eea, #764ba2);
   width: 0%;
-  transition: width 0.1s;
+  border-radius: 3px;
   position: relative;
+  transition: width 0.1s;
 }
 
 .progress::after {
   content: '';
   position: absolute;
-  right: -6px;
+  right: -8px;
   top: 50%;
   transform: translateY(-50%);
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   background: white;
-  border: 2px solid #667eea;
+  border: 3px solid #667eea;
   border-radius: 50%;
-  display: none;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .progress-bar:hover .progress::after {
-  display: block;
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
 }
 
 .time-info {
@@ -368,6 +377,7 @@
   font-size: 12px;
   color: #999;
   margin-top: 5px;
+  user-select: none;
 }
 
 /* 主控制面板 */
@@ -425,6 +435,8 @@
 .volume-icon {
   color: #666;
   font-size: 16px;
+  width: 20px;
+  text-align: center;
 }
 
 .volume-slider {
@@ -434,6 +446,11 @@
   border-radius: 2px;
   cursor: pointer;
   position: relative;
+  transition: height 0.2s;
+}
+
+.volume-slider:hover {
+  height: 6px;
 }
 
 .volume-progress {
@@ -455,11 +472,13 @@
   background: white;
   border: 2px solid #667eea;
   border-radius: 50%;
-  display: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .volume-slider:hover .volume-progress::after {
-  display: block;
+  opacity: 1;
 }
 
 /* 播放模式 */
@@ -680,18 +699,18 @@
   <!-- 音乐信息 -->
   <div class="music-info-adv">
     <div class="album-cover">
-      <img id="album-cover" src="https://p2.music.126.net/T9N7fq7QaZRa4NpP7N4hVg==/109951163088676107.jpg" alt="专辑封面">
+      <img id="album-cover" src="../music-cover/Undying Macula.jpg" alt="专辑封面" onerror="this.src='https://p2.music.126.net/T9N7fq7QaZRa4NpP7N4hVg==/109951163088676107.jpg'">
     </div>
     <div class="track-info">
-      <div class="track-title" id="current-track">未选择音乐</div>
-      <div class="track-artist" id="current-artist">请从播放列表选择</div>
+      <div class="track-title" id="current-track">Undying Macula</div>
+      <div class="track-artist" id="current-artist">Ashrount</div>
       <div class="progress-container">
         <div class="progress-bar" id="progress-bar">
           <div class="progress" id="progress"></div>
         </div>
         <div class="time-info">
           <span id="current-time">00:00</span>
-          <span id="total-time">00:00</span>
+          <span id="total-time">02:43</span>
         </div>
       </div>
     </div>
@@ -740,7 +759,7 @@
     <div class="playlist-header" onclick="togglePlaylist()">
       <div class="playlist-title">
         <i class="fa fa-music"></i>
-        播放列表 (<span id="playlist-count">0</span>)
+        播放列表 (<span id="playlist-count">1</span>)
       </div>
       <div class="playlist-toggle collapsed" id="playlist-toggle">
         <i class="fa fa-chevron-down"></i>
@@ -753,7 +772,7 @@
 
   <!-- 歌词显示 -->
   <div class="lyrics-container" id="lyrics-container">
-    <div id="lyrics-content">歌词加载中...</div>
+    <div id="lyrics-content">暂无歌词</div>
   </div>
 
   <!-- 底部控制 -->
@@ -784,8 +803,9 @@ let playMode = 'list'; // list, random, single
 let favorites = new Set();
 let playlistCollapsed = true;
 let lyricsVisible = false;
+let isDragging = false;
 
-// 示例音乐列表
+// 你的音乐列表
 const musicList = [
   {
     name: 'Undying Macula',
@@ -800,6 +820,7 @@ const musicList = [
 document.addEventListener('DOMContentLoaded', function() {
   initPlayer();
   renderPlaylist();
+  setupEventListeners();
 });
 
 function initPlayer() {
@@ -812,9 +833,11 @@ function initPlayer() {
     preload: 'auto',
     volume: currentVolume,
     mutex: true,
-    listFolded: true,
-    listMaxHeight: '0px',
-    autoplay: false
+    lrcType: 0,
+    fixed: false,
+    mini: false,
+    autoplay: false,
+    controls: false  // 隐藏默认控制条
   });
 
   // 事件监听
@@ -845,27 +868,82 @@ function initPlayer() {
 
   ap.on('timeupdate', updateProgress);
   ap.on('volumechange', updateVolumeUI);
-
-  // 进度条点击
-  document.getElementById('progress-bar').addEventListener('click', function(e) {
-    const rect = this.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
-    ap.audio.currentTime = percent * ap.audio.duration;
-  });
-
-  // 音量条点击
-  document.getElementById('volume-slider').addEventListener('click', function(e) {
-    const rect = this.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
-    currentVolume = Math.max(0, Math.min(1, percent));
-    ap.volume(currentVolume);
-    updateVolumeUI();
+  ap.on('loadedmetadata', () => {
+    updateProgress();
+    const totalTime = document.getElementById('total-time');
+    if (ap.audio.duration && !isNaN(ap.audio.duration)) {
+      totalTime.textContent = formatTime(ap.audio.duration);
+    }
   });
 
   updatePlaylistCount();
 }
 
-// 播放列表相关
+function setupEventListeners() {
+  const progressBar = document.getElementById('progress-bar');
+  const progress = document.getElementById('progress');
+  const volumeSlider = document.getElementById('volume-slider');
+  const volumeProgress = document.getElementById('volume-progress');
+
+  // 进度条点击
+  progressBar.addEventListener('click', function(e) {
+    handleProgressClick(e);
+  });
+
+  // 进度条拖拽
+  progressBar.addEventListener('mousedown', function(e) {
+    isDragging = true;
+    handleProgressClick(e);
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (isDragging) {
+      handleProgressClick(e);
+    }
+  });
+
+  document.addEventListener('mouseup', function() {
+    isDragging = false;
+  });
+
+  // 音量控制
+  volumeSlider.addEventListener('click', function(e) {
+    const rect = this.getBoundingClientRect();
+    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    currentVolume = percent;
+    ap.volume(currentVolume);
+    updateVolumeUI();
+  });
+}
+
+function handleProgressClick(e) {
+  if (!ap.audio || !ap.audio.duration) return;
+  
+  const progressBar = document.getElementById('progress-bar');
+  const rect = progressBar.getBoundingClientRect();
+  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  const time = percent * ap.audio.duration;
+  
+  ap.seek(time);
+  updateProgress();
+}
+
+function updateProgress() {
+  if (!ap.audio || !ap.audio.duration || isNaN(ap.audio.duration)) {
+    return;
+  }
+  
+  const currentTime = ap.audio.currentTime || 0;
+  const duration = ap.audio.duration || 0;
+  const percent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  
+  const progress = document.getElementById('progress');
+  progress.style.width = `${percent}%`;
+  
+  document.getElementById('current-time').textContent = formatTime(currentTime);
+  document.getElementById('total-time').textContent = formatTime(duration);
+}
+
 function renderPlaylist() {
   const playlistEl = document.getElementById('playlist');
   playlistEl.innerHTML = '';
@@ -899,7 +977,6 @@ function updateActivePlaylistItem(index) {
   });
 }
 
-// 控制函数
 function togglePlayPause() {
   if (isPlaying) {
     ap.pause();
@@ -943,6 +1020,7 @@ function updateVolumeUI() {
   const iconSmall = document.getElementById('volume-icon-small');
   
   progress.style.width = `${volume * 100}%`;
+  currentVolume = volume;
   
   let iconClass = 'fa fa-volume-up';
   if (volume === 0) {
@@ -953,6 +1031,7 @@ function updateVolumeUI() {
   
   icon.className = iconClass;
   iconSmall.className = iconClass + ' volume-icon';
+  isMuted = volume === 0;
 }
 
 function changePlayMode() {
@@ -1005,20 +1084,9 @@ function updateTrackInfo() {
   document.getElementById('current-track').textContent = current.name;
   document.getElementById('current-artist').textContent = current.artist;
   document.getElementById('album-cover').src = current.cover;
-  document.getElementById('total-time').textContent = formatTime(ap.audio.duration);
+  document.getElementById('total-time').textContent = current.duration;
   
   updateActivePlaylistItem(ap.list.index);
-}
-
-function updateProgress() {
-  const progress = document.getElementById('progress');
-  const currentTime = document.getElementById('current-time');
-  
-  if (ap.audio.duration) {
-    const percent = (ap.audio.currentTime / ap.audio.duration) * 100;
-    progress.style.width = `${percent}%`;
-    currentTime.textContent = formatTime(ap.audio.currentTime);
-  }
 }
 
 function updateLyrics() {
@@ -1109,7 +1177,7 @@ function exportPlaylist() {
 
 // 工具函数
 function formatTime(seconds) {
-  if (isNaN(seconds)) return '00:00';
+  if (isNaN(seconds) || seconds === 0) return '00:00';
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
