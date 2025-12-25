@@ -581,11 +581,35 @@ body > .music-avatar-container {
 
 <!-- 将播放器直接插入到body末尾，避免侧边栏裁剪 -->
 <script>
+// 修复1: 自动计算正确的资源路径
+function getCorrectPath(relativePath) {
+  // 获取当前页面的路径
+  const currentPath = window.location.pathname;
+  
+  // 如果是根目录
+  if (currentPath === '/' || currentPath === '/index.html' || currentPath.endsWith('/')) {
+    return relativePath;
+  }
+  
+  // 如果是文章页面（在source目录下）
+  if (currentPath.includes('/source/')) {
+    // 计算需要返回多少级目录才能到达根目录
+    const pathDepth = currentPath.split('/').length - 2; // 减去开头的空字符串和最后的文件名
+    if (pathDepth > 0) {
+      return '../'.repeat(pathDepth) + relativePath;
+    }
+  }
+  
+  // 默认情况
+  return relativePath;
+}
+
 // 创建播放器容器并直接插入到body
 document.addEventListener('DOMContentLoaded', function() {
   // 检查是否已经存在播放器容器
   if (document.querySelector('.music-avatar-container')) {
     console.log('播放器已存在');
+    restorePlayerState();
     return;
   }
   
@@ -595,7 +619,7 @@ document.addEventListener('DOMContentLoaded', function() {
   container.innerHTML = `
     <!-- 圆形音乐封面 -->
     <div class="music-avatar" id="music-avatar">
-      <img src="../music-cover/Undying Macula.jpg" alt="专辑封面" class="music-avatar-img" id="avatar-img" onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\"><rect width=\"24\" height=\"24\" fill=\"%23667eea\"/><text x=\"12\" y=\"16\" font-family=\"Arial\" font-size=\"12\" fill=\"white\" text-anchor=\"middle\">Music</text></svg>'">
+      <img src="${getCorrectPath('../music-cover/Undying Macula.jpg')}" alt="专辑封面" class="music-avatar-img" id="avatar-img" onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\"><rect width=\"24\" height=\"24\" fill=\"%23667eea\"/><text x=\"12\" y=\"16\" font-family=\"Arial\" font-size=\"12\" fill=\"white\" text-anchor=\"middle\">Music</text></svg>'">
       <div class="play-overlay">
         <button class="play-btn" id="avatar-play-btn" title="播放/暂停">
           <i class="fa fa-play" id="avatar-play-icon"></i>
@@ -680,41 +704,138 @@ let lastRandomIndex = -1;
 // 单曲循环相关变量
 let currentTrackIndex = 0;
 
-// 你的音乐列表
+// 修复1: 使用动态路径的音乐列表
 const musicList = [
   {
     name: 'Undying Macula',
     artist: 'Ashrount',
-    url: '../music/Undying Macula.mp3',
-    cover: '../music-cover/Undying Macula.jpg',
+    url: getCorrectPath('../music/Undying Macula.mp3'),
+    cover: getCorrectPath('../music-cover/Undying Macula.jpg'),
     duration: '02:43',
   },
   {
     name: 'AFTER PANDORA',
     artist: '削除',
-    url: '../music/AFTER PANDORA.mp3',
-    cover: '../music-cover/AFTER PANDORA.png',
-    duration: '04:17',
+    url: getCorrectPath('../music/AFTER PANDORA.mp3'),
+    cover: getCorrectPath('../music-cover/AFTER PANDORA.png'),
+    duration: '04:06',
   },
   {
     name: 'Androgynos (Full Phase)',
     artist: 'BlackY',
-    url: '../music/Androgynos (Full Phase).mp3',
-    cover: '../music-cover/Androgynos (Full Phase).jpg',
-    duration: '04:49',
+    url: getCorrectPath('../music/Androgynos (Full Phase).mp3'),
+    cover: getCorrectPath('../music-cover/Androgynos (Full Phase).jpg'),
+    duration: '04:56',
   },
   {
     name: 'Immutable',
     artist: 'Juggernaut.',
-    url: '../music/Immutable.mp3',
-    cover: '../music-cover/Immutable.png',
-    duration: '05:19',
+    url: getCorrectPath('../music/Immutable.mp3'),
+    cover: getCorrectPath('../music-cover/Immutable.png'),
+    duration: '05:25',
   },
 ];
 
+// 修复2: 保存播放状态到 localStorage
+function savePlayerState() {
+  try {
+    const state = {
+      isPlaying: isPlaying,
+      currentTrackIndex: currentTrackIndex,
+      playMode: playMode,
+      currentTime: ap && ap.audio ? ap.audio.currentTime : 0,
+      volume: currentVolume,
+      lastRandomIndex: lastRandomIndex
+    };
+    localStorage.setItem('musicPlayerState', JSON.stringify(state));
+  } catch (e) {
+    console.log('保存播放状态失败:', e);
+  }
+}
+
+// 修复2: 从 localStorage 恢复播放状态
+function restorePlayerState() {
+  try {
+    const savedState = localStorage.getItem('musicPlayerState');
+    if (savedState) {
+      const state = JSON.parse(savedState);
+      
+      // 恢复播放模式
+      if (state.playMode) {
+        playMode = state.playMode;
+        updatePlayModeUI();
+      }
+      
+      // 恢复随机播放状态
+      if (state.lastRandomIndex !== undefined) {
+        lastRandomIndex = state.lastRandomIndex;
+      }
+      
+      // 恢复当前歌曲索引
+      if (state.currentTrackIndex !== undefined) {
+        currentTrackIndex = state.currentTrackIndex;
+      }
+      
+      // 恢复音量
+      if (state.volume !== undefined) {
+        currentVolume = state.volume;
+      }
+      
+      // 如果有正在播放的歌曲，尝试恢复
+      if (ap && state.currentTrackIndex !== undefined) {
+        // 确保播放器已准备好
+        setTimeout(() => {
+          if (ap.list && ap.list.switch) {
+            ap.list.switch(state.currentTrackIndex);
+            updateTrackInfo();
+            updateActivePlaylistItem(state.currentTrackIndex);
+            
+            // 恢复播放时间
+            if (state.currentTime > 0) {
+              setTimeout(() => {
+                if (ap.audio) {
+                  ap.seek(state.currentTime);
+                  updateProgressDisplay(state.currentTime / (ap.audio.duration || 1));
+                }
+              }, 500);
+            }
+            
+            // 恢复播放状态
+            if (state.isPlaying) {
+              setTimeout(() => {
+                ap.play();
+              }, 1000);
+            }
+          }
+        }, 100);
+      }
+    }
+  } catch (e) {
+    console.log('恢复播放状态失败:', e);
+  }
+}
+
+// 页面关闭前保存状态
+window.addEventListener('beforeunload', savePlayerState);
+
 function initMusicPlayer() {
+  // 检查是否已存在 APlayer 容器
+  let playerContainer = document.getElementById('aplayer-hidden-container');
+  if (playerContainer) {
+    // 如果已有容器，尝试获取现有的 APlayer 实例
+    if (window.apInstance) {
+      ap = window.apInstance;
+      setupPlayerEvents();
+      restorePlayerState();
+      return;
+    } else {
+      // 移除旧的容器
+      playerContainer.remove();
+    }
+  }
+  
   // 创建隐藏的 APlayer 容器
-  const playerContainer = document.createElement('div');
+  playerContainer = document.createElement('div');
   playerContainer.id = 'aplayer-hidden-container';
   playerContainer.style.display = 'none';
   document.body.appendChild(playerContainer);
@@ -735,18 +856,35 @@ function initMusicPlayer() {
     autoplay: false,
     controls: false
   });
+  
+  // 保存到全局
+  window.apInstance = ap;
+  
+  setupPlayerEvents();
+  renderPlaylist();
+  setupEventListeners();
+  positionPanel();
+  updatePlayModeUI();
+  hidePanel();
+  
+  // 恢复状态
+  restorePlayerState();
+}
 
+function setupPlayerEvents() {
   // 事件监听
   ap.on('play', () => {
     isPlaying = true;
     updatePlayButton();
     updateAvatarPlayButton();
+    savePlayerState();
   });
 
   ap.on('pause', () => {
     isPlaying = false;
     updatePlayButton();
     updateAvatarPlayButton();
+    savePlayerState();
   });
 
   ap.on('canplay', () => {
@@ -760,6 +898,14 @@ function initMusicPlayer() {
   ap.on('timeupdate', () => {
     if (!isSeeking && !isDraggingProgress) {
       updateProgress();
+    }
+    
+    // 定期保存播放进度
+    if (ap.audio && ap.audio.currentTime) {
+      if (Math.floor(ap.audio.currentTime) !== Math.floor(lastTime)) {
+        savePlayerState();
+      }
+      lastTime = ap.audio.currentTime;
     }
     
     // 检测歌曲是否播放完毕
@@ -779,8 +925,6 @@ function initMusicPlayer() {
           endDetected = false;
         }, 600);
       }
-      
-      lastTime = currentTime;
     }
   });
   
@@ -791,12 +935,14 @@ function initMusicPlayer() {
       totalTime.textContent = formatTime(ap.audio.duration);
     }
   });
-
-  renderPlaylist();
-  setupEventListeners();
-  positionPanel();
-  updatePlayModeUI();
-  hidePanel();
+  
+  // 监听歌曲切换
+  ap.on('listswitch', (index) => {
+    currentTrackIndex = index.item;
+    updateTrackInfo();
+    updateActivePlaylistItem(index.item);
+    savePlayerState();
+  });
 }
 
 function setupEventListeners() {
@@ -1116,7 +1262,7 @@ function renderPlaylist() {
   musicList.forEach((track, index) => {
     const item = document.createElement('div');
     item.className = 'playlist-item';
-    if (index === 0) item.classList.add('active');
+    if (index === currentTrackIndex) item.classList.add('active');
     item.innerHTML = `
       <div class="playlist-num">${index + 1}</div>
       <div class="playlist-info">
@@ -1146,6 +1292,9 @@ function playTrack(index) {
   updateActivePlaylistItem(index);
   updateTrackInfo();
   showPanel();
+  
+  // 保存状态
+  savePlayerState();
 }
 
 function updateActivePlaylistItem(index) {
@@ -1244,6 +1393,9 @@ function changePlayMode() {
   
   updatePlayModeUI();
   showPanel();
+  
+  // 保存状态
+  savePlayerState();
 }
 
 // 改进的单曲循环处理
@@ -1277,6 +1429,9 @@ function handleTrackEnded() {
       }
     }, 100);
   }
+  
+  // 保存状态
+  savePlayerState();
 }
 
 function updatePlayModeUI() {
@@ -1316,7 +1471,7 @@ function updateTrackInfo() {
   
   if (trackName) trackName.textContent = current.name;
   if (trackArtist) trackArtist.textContent = current.artist;
-  if (avatarImg) avatarImg.src = current.cover;
+  if (avatarImg && current.cover) avatarImg.src = current.cover;
   if (totalTime) totalTime.textContent = current.duration;
   
   updateActivePlaylistItem(ap.list.index);
