@@ -604,7 +604,7 @@ let panelTimeout = null;
 let isPanelVisible = false;
 let isSeeking = false; // 标记是否正在跳转
 
-// 你的音乐列表
+// 你的音乐列表 - 添加多首歌曲示例
 const musicList = [
   {
     name: 'Undying Macula',
@@ -613,6 +613,34 @@ const musicList = [
     cover: '../music-cover/Undying Macula.jpg',
     duration: '02:43',
   },
+  {
+    name: 'Lemon',
+    artist: '米津玄師',
+    url: 'https://music.163.com/song/media/outer/url?id=536622304.mp3',
+    cover: 'https://p2.music.126.net/T9N7fq7QaZRa4NpP7N4hVg==/109951163088676107.jpg',
+    duration: '04:17',
+  },
+  {
+    name: '打上花火',
+    artist: 'DAOKO×米津玄師',
+    url: 'https://music.163.com/song/media/outer/url?id=536622303.mp3',
+    cover: 'https://p1.music.126.net/5_2Qz404DZR9RjK2zyvH1Q==/109951163088676107.jpg',
+    duration: '04:49',
+  },
+  {
+    name: '起风了',
+    artist: '买辣椒也用券',
+    url: 'https://music.163.com/song/media/outer/url?id=1330348068.mp3',
+    cover: 'https://p1.music.126.net/diGAyEmpymX8G7JcnElncQ==/109951163699673355.jpg',
+    duration: '05:19',
+  },
+  {
+    name: '光年之外',
+    artist: 'G.E.M.邓紫棋',
+    url: 'https://music.163.com/song/media/outer/url?id=449818741.mp3',
+    cover: 'https://p1.music.126.net/fZ7-JZ7H2c8NpE3bP4U6cA==/109951163088676107.jpg',
+    duration: '03:59',
+  }
 ];
 
 function initMusicPlayer() {
