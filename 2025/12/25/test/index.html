@@ -191,15 +191,15 @@
   <div class="cc-license animated" itemprop="license">
     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
   </div>
-/* 简洁圆形音乐播放器样式 */
 <style>
-/* 播放器容器 */
-.mini-music-player {
-  position: relative;
+/* 修复侧边栏裁剪问题 - 将整个播放器移到body层级 */
+body > .music-avatar-container {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  z-index: 9999;
   width: 80px;
   height: 80px;
-  margin: 20px auto;
-  z-index: 1000; /* 提高层级 */
 }
 
 /* 圆形音乐封面 */
@@ -212,7 +212,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 1001;
+  z-index: 10000;
 }
 
 .music-avatar:hover {
@@ -274,9 +274,9 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-/* 音乐控制面板 - 修复层级问题 */
+/* 音乐控制面板 - 固定在页面层级 */
 .music-panel {
-  position: fixed; /* 改为 fixed 定位 */
+  position: fixed;
   width: 280px;
   background: white;
   border-radius: 12px;
@@ -285,16 +285,16 @@
   visibility: hidden;
   transform: translateY(-20px);
   transition: all 0.3s ease;
-  z-index: 9999; /* 非常高的层级 */
+  z-index: 9998;
   overflow: hidden;
-  pointer-events: none; /* 默认不可点击 */
+  pointer-events: none;
 }
 
 .music-panel.show {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
-  pointer-events: auto; /* 显示时可点击 */
+  pointer-events: auto;
 }
 
 /* 播放列表 */
@@ -519,78 +519,87 @@
 .play-mode-indicator.random { background: #f5222d; }
 </style>
 
-<!-- 音乐播放器HTML结构 -->
-<div class="mini-music-player">
-  <!-- 圆形音乐封面 -->
-  <div class="music-avatar" id="music-avatar">
-    <img src="../music-cover/Undying Macula.jpg" alt="专辑封面" class="music-avatar-img" id="avatar-img" onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\"><rect width=\"24\" height=\"24\" fill=\"%23667eea\"/><text x=\"12\" y=\"16\" font-family=\"Arial\" font-size=\"12\" fill=\"white\" text-anchor=\"middle\">Music</text></svg>'">
-    <div class="play-overlay">
-      <button class="play-btn" id="avatar-play-btn" title="播放/暂停">
-        <i class="fa fa-play" id="avatar-play-icon"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- 音乐控制面板 -->
-  <div class="music-panel" id="music-panel">
-    <!-- 播放列表 -->
-    <div class="playlist-section">
-      <div class="playlist-title">播放列表</div>
-      <div class="playlist" id="playlist">
-        <!-- 播放列表项将通过JavaScript动态生成 -->
-      </div>
-    </div>
-
-    <!-- 控制栏 -->
-    <div class="controls-section">
-      <!-- 当前播放信息 -->
-      <div class="current-track">
-        <div class="track-name" id="current-track-name">Undying Macula</div>
-        <div class="track-artist" id="current-track-artist">Ashrount</div>
-      </div>
-
-      <!-- 进度条 -->
-      <div class="progress-container">
-        <div class="progress-bar" id="progress-bar">
-          <div class="progress" id="progress"></div>
-        </div>
-        <div class="time-info">
-          <span id="current-time">00:00</span>
-          <span id="total-time">02:43</span>
-        </div>
-      </div>
-
-      <!-- 控制按钮 -->
-      <div class="controls-group">
-        <button class="control-btn" onclick="changePlayMode()" id="mode-btn" title="播放模式">
-          <i class="fa fa-list-ol" id="mode-icon"></i>
-        </button>
-        <button class="control-btn" onclick="previousTrack()" title="上一首">
-          <i class="fa fa-step-backward"></i>
-        </button>
-        <button class="control-btn main" onclick="togglePlayPause()" id="main-play-btn" title="播放/暂停">
-          <i class="fa fa-play" id="main-play-icon"></i>
-        </button>
-        <button class="control-btn" onclick="nextTrack()" title="下一首">
-          <i class="fa fa-step-forward"></i>
-        </button>
-        <div class="play-mode-indicator" id="play-mode-indicator"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 引入 APlayer -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
-<script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
-
+<!-- 将播放器直接插入到body末尾，避免侧边栏裁剪 -->
 <script>
+// 创建播放器容器并直接插入到body
+document.addEventListener('DOMContentLoaded', function() {
+  // 创建容器
+  const container = document.createElement('div');
+  container.className = 'music-avatar-container';
+  container.innerHTML = `
+    <!-- 圆形音乐封面 -->
+    <div class="music-avatar" id="music-avatar">
+      <img src="../music-cover/Undying Macula.jpg" alt="专辑封面" class="music-avatar-img" id="avatar-img" onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\"><rect width=\"24\" height=\"24\" fill=\"%23667eea\"/><text x=\"12\" y=\"16\" font-family=\"Arial\" font-size=\"12\" fill=\"white\" text-anchor=\"middle\">Music</text></svg>'">
+      <div class="play-overlay">
+        <button class="play-btn" id="avatar-play-btn" title="播放/暂停">
+          <i class="fa fa-play" id="avatar-play-icon"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 音乐控制面板 -->
+    <div class="music-panel" id="music-panel">
+      <!-- 播放列表 -->
+      <div class="playlist-section">
+        <div class="playlist-title">播放列表</div>
+        <div class="playlist" id="playlist">
+          <!-- 播放列表项将通过JavaScript动态生成 -->
+        </div>
+      </div>
+
+      <!-- 控制栏 -->
+      <div class="controls-section">
+        <!-- 当前播放信息 -->
+        <div class="current-track">
+          <div class="track-name" id="current-track-name">Undying Macula</div>
+          <div class="track-artist" id="current-track-artist">Ashrount</div>
+        </div>
+
+        <!-- 进度条 -->
+        <div class="progress-container">
+          <div class="progress-bar" id="progress-bar">
+            <div class="progress" id="progress"></div>
+          </div>
+          <div class="time-info">
+            <span id="current-time">00:00</span>
+            <span id="total-time">02:43</span>
+          </div>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="controls-group">
+          <button class="control-btn" id="mode-btn" title="播放模式">
+            <i class="fa fa-list-ol" id="mode-icon"></i>
+          </button>
+          <button class="control-btn" id="prev-btn" title="上一首">
+            <i class="fa fa-step-backward"></i>
+          </button>
+          <button class="control-btn main" id="main-play-btn" title="播放/暂停">
+            <i class="fa fa-play" id="main-play-icon"></i>
+          </button>
+          <button class="control-btn" id="next-btn" title="下一首">
+            <i class="fa fa-step-forward"></i>
+          </button>
+          <div class="play-mode-indicator" id="play-mode-indicator"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // 插入到body末尾
+  document.body.appendChild(container);
+  
+  // 初始化播放器
+  initMusicPlayer();
+});
+
 // 全局变量
 let ap = null;
 let isPlaying = false;
 let currentVolume = 0.7;
 let playMode = 'list'; // list: 列表循环, repeat: 单曲循环, random: 随机播放
 let panelTimeout = null;
+let isPanelVisible = false;
 
 // 你的音乐列表
 const musicList = [
@@ -603,15 +612,7 @@ const musicList = [
   },
 ];
 
-// 初始化
-document.addEventListener('DOMContentLoaded', function() {
-  initPlayer();
-  renderPlaylist();
-  setupEventListeners();
-  positionPanel(); // 初始定位面板
-});
-
-function initPlayer() {
+function initMusicPlayer() {
   // 创建隐藏的 APlayer 容器
   const playerContainer = document.createElement('div');
   playerContainer.id = 'aplayer-hidden-container';
@@ -622,8 +623,8 @@ function initPlayer() {
     container: document.getElementById('aplayer-hidden-container'),
     audio: musicList,
     theme: '#667eea',
-    loop: 'all', // 先设置为全部循环
-    order: 'list', // 顺序播放
+    loop: 'all',
+    order: 'list',
     preload: 'auto',
     volume: currentVolume,
     mutex: true,
@@ -664,56 +665,95 @@ function initPlayer() {
     }
   });
 
-  // 设置初始播放模式
+  // 初始化UI
+  renderPlaylist();
+  setupEventListeners();
+  positionPanel();
   updatePlayModeUI();
+  
+  // 初始隐藏面板
+  hidePanel();
 }
 
 function setupEventListeners() {
-  const progressBar = document.getElementById('progress-bar');
   const avatar = document.getElementById('music-avatar');
   const panel = document.getElementById('music-panel');
+  const progressBar = document.getElementById('progress-bar');
   const avatarBtn = document.getElementById('avatar-play-btn');
+  const modeBtn = document.getElementById('mode-btn');
+  const prevBtn = document.getElementById('prev-btn');
+  const mainBtn = document.getElementById('main-play-btn');
+  const nextBtn = document.getElementById('next-btn');
 
   // 进度条点击
   progressBar.addEventListener('click', function(e) {
     handleProgressClick(e);
   });
 
-  // 圆形封面的播放按钮
+  // 按钮事件
   avatarBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     togglePlayPause();
   });
 
+  modeBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    changePlayMode();
+  });
+
+  prevBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    previousTrack();
+  });
+
+  mainBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    togglePlayPause();
+  });
+
+  nextBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    nextTrack();
+  });
+
   // 圆形封面鼠标进入
   avatar.addEventListener('mouseenter', function(e) {
+    e.stopPropagation();
     showPanel();
   });
 
   // 圆形封面鼠标离开
   avatar.addEventListener('mouseleave', function(e) {
-    // 延迟隐藏，给鼠标移动到面板的时间
-    panelTimeout = setTimeout(hidePanel, 300);
+    e.stopPropagation();
+    if (!isPanelVisible) {
+      panelTimeout = setTimeout(hidePanel, 300);
+    }
   });
 
   // 面板鼠标进入
-  panel.addEventListener('mouseenter', function() {
+  panel.addEventListener('mouseenter', function(e) {
+    e.stopPropagation();
+    isPanelVisible = true;
     if (panelTimeout) {
       clearTimeout(panelTimeout);
     }
   });
 
   // 面板鼠标离开
-  panel.addEventListener('mouseleave', function() {
-    hidePanel();
+  panel.addEventListener('mouseleave', function(e) {
+    e.stopPropagation();
+    isPanelVisible = false;
+    panelTimeout = setTimeout(hidePanel, 300);
   });
 
-  // 窗口滚动时重新定位面板
+  // 窗口滚动/调整大小时重新定位面板
   window.addEventListener('scroll', positionPanel);
   window.addEventListener('resize', positionPanel);
   
   // 点击文档其他地方隐藏面板
   document.addEventListener('click', function(e) {
+    const avatar = document.getElementById('music-avatar');
+    const panel = document.getElementById('music-panel');
     if (!avatar.contains(e.target) && !panel.contains(e.target)) {
       hidePanel();
     }
@@ -724,6 +764,7 @@ function showPanel() {
   const panel = document.getElementById('music-panel');
   panel.classList.add('show');
   positionPanel();
+  isPanelVisible = true;
   
   if (panelTimeout) {
     clearTimeout(panelTimeout);
@@ -733,32 +774,41 @@ function showPanel() {
 function hidePanel() {
   const panel = document.getElementById('music-panel');
   panel.classList.remove('show');
+  isPanelVisible = false;
 }
 
 function positionPanel() {
   const avatar = document.getElementById('music-avatar');
   const panel = document.getElementById('music-panel');
+  if (!avatar || !panel) return;
+  
   const avatarRect = avatar.getBoundingClientRect();
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
+  const panelWidth = 280;
+  const panelHeight = 300;
   
-  // 计算面板位置
-  let left = avatarRect.right + 10; // 右侧10px
+  // 计算位置 - 优先显示在右侧
+  let left = avatarRect.right + 10;
   let top = avatarRect.top;
   
   // 如果右侧空间不够，显示在左侧
-  if (left + 280 > viewportWidth) {
-    left = avatarRect.left - 280 - 10;
+  if (left + panelWidth > viewportWidth - 20) {
+    left = avatarRect.left - panelWidth - 10;
   }
   
-  // 如果下方空间不够，向上偏移
-  if (top + 300 > viewportHeight) {
-    top = viewportHeight - 300;
+  // 如果左侧空间也不够，显示在右侧但调整位置
+  if (left < 20) {
+    left = 20;
   }
   
-  // 如果上方空间不够，向下偏移
-  if (top < 10) {
-    top = 10;
+  // 调整垂直位置
+  if (top + panelHeight > viewportHeight - 20) {
+    top = viewportHeight - panelHeight - 20;
+  }
+  
+  if (top < 20) {
+    top = 20;
   }
   
   panel.style.left = left + 'px';
@@ -795,6 +845,8 @@ function updateProgress() {
 
 function renderPlaylist() {
   const playlistEl = document.getElementById('playlist');
+  if (!playlistEl) return;
+  
   playlistEl.innerHTML = '';
   
   musicList.forEach((track, index) => {
@@ -809,7 +861,10 @@ function renderPlaylist() {
       </div>
       <div class="playlist-duration">${track.duration}</div>
     `;
-    item.addEventListener('click', () => playTrack(index));
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playTrack(index);
+    });
     playlistEl.appendChild(item);
   });
 }
@@ -819,7 +874,7 @@ function playTrack(index) {
   ap.play();
   updateActivePlaylistItem(index);
   updateTrackInfo();
-  showPanel(); // 切换歌曲时保持面板显示
+  showPanel();
 }
 
 function updateActivePlaylistItem(index) {
@@ -834,7 +889,7 @@ function togglePlayPause() {
   } else {
     ap.play();
   }
-  showPanel(); // 点击播放按钮时显示面板
+  showPanel();
 }
 
 function updatePlayButton() {
@@ -863,7 +918,6 @@ function updateAvatarPlayButton() {
 
 function previousTrack() {
   if (playMode === 'random') {
-    // 随机模式下随机选一首
     const randomIndex = Math.floor(Math.random() * musicList.length);
     playTrack(randomIndex);
   } else {
@@ -871,12 +925,11 @@ function previousTrack() {
     if (!isPlaying) ap.play();
   }
   updateTrackInfo();
-  showPanel(); // 切换歌曲时显示面板
+  showPanel();
 }
 
 function nextTrack() {
   if (playMode === 'random') {
-    // 随机模式下随机选一首
     const randomIndex = Math.floor(Math.random() * musicList.length);
     playTrack(randomIndex);
   } else {
@@ -884,7 +937,7 @@ function nextTrack() {
     if (!isPlaying) ap.play();
   }
   updateTrackInfo();
-  showPanel(); // 切换歌曲时显示面板
+  showPanel();
 }
 
 function changePlayMode() {
@@ -898,20 +951,19 @@ function changePlayMode() {
   const nextIndex = (currentIndex + 1) % modes.length;
   playMode = modes[nextIndex].id;
   
-  // 更新 APlayer 设置
   if (playMode === 'repeat') {
-    ap.loop = 'one'; // 单曲循环
-    ap.order = 'list'; // 顺序
+    ap.loop = 'one';
+    ap.order = 'list';
   } else if (playMode === 'random') {
-    ap.loop = 'all'; // 全部循环
-    ap.order = 'random'; // 随机
+    ap.loop = 'all';
+    ap.order = 'random';
   } else {
-    ap.loop = 'all'; // 全部循环
-    ap.order = 'list'; // 顺序
+    ap.loop = 'all';
+    ap.order = 'list';
   }
   
   updatePlayModeUI();
-  showPanel(); // 切换模式时显示面板
+  showPanel();
 }
 
 function updatePlayModeUI() {
@@ -935,21 +987,18 @@ function updatePlayModeUI() {
     indicatorClass = 'random';
   }
   
-  modeBtn.title = title;
-  modeIcon.className = 'fa ' + icon;
-  indicator.className = 'play-mode-indicator ' + indicatorClass;
+  if (modeBtn) modeBtn.title = title;
+  if (modeIcon) modeIcon.className = 'fa ' + icon;
+  if (indicator) indicator.className = 'play-mode-indicator ' + indicatorClass;
 }
 
 function handleTrackEnded() {
   if (playMode === 'repeat') {
-    // 单曲循环，重新播放当前歌曲
     ap.play();
   } else if (playMode === 'random') {
-    // 随机播放，随机选下一首
     const randomIndex = Math.floor(Math.random() * musicList.length);
     playTrack(randomIndex);
   } else {
-    // 列表循环，播下一首
     nextTrack();
   }
 }
@@ -958,10 +1007,15 @@ function updateTrackInfo() {
   const current = musicList[ap.list.index];
   if (!current) return;
   
-  document.getElementById('current-track-name').textContent = current.name;
-  document.getElementById('current-track-artist').textContent = current.artist;
-  document.getElementById('avatar-img').src = current.cover;
-  document.getElementById('total-time').textContent = current.duration;
+  const trackName = document.getElementById('current-track-name');
+  const trackArtist = document.getElementById('current-track-artist');
+  const avatarImg = document.getElementById('avatar-img');
+  const totalTime = document.getElementById('total-time');
+  
+  if (trackName) trackName.textContent = current.name;
+  if (trackArtist) trackArtist.textContent = current.artist;
+  if (avatarImg) avatarImg.src = current.cover;
+  if (totalTime) totalTime.textContent = current.duration;
   
   updateActivePlaylistItem(ap.list.index);
 }
@@ -974,6 +1028,10 @@ function formatTime(seconds) {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 </script>
+
+<!-- 引入 APlayer -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+<script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
         </div>
       </div>
     </div>
