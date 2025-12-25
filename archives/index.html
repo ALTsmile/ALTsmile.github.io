@@ -58,7 +58,6 @@
   <script src="/js/third-party/fancybox.js" defer></script>
 
 
-  <script src="/js/third-party/addtoany.js" defer></script>
 
   
 
@@ -189,7 +188,127 @@
   <div class="cc-license animated" itemprop="license">
     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
   </div>
+<!-- 音乐播放器样式 -->
+<style>
+.music-player-sidebar {
+  margin: 20px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
 
+.music-player-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.music-player-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.music-player-toggle {
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.music-player-toggle:hover {
+  transform: rotate(90deg);
+}
+
+.music-player-body {
+  background: white;
+  padding: 15px;
+}
+</style>
+
+<!-- 音乐播放器HTML -->
+<div class="music-player-sidebar">
+  <div class="music-player-header">
+    <div class="music-player-title">
+      <i class="fa fa-music"></i> 背景音乐
+    </div>
+    <div class="music-player-toggle" id="music-toggle">
+      <i class="fa fa-play"></i>
+    </div>
+  </div>
+  <div class="music-player-body" id="aplayer-container">
+    <!-- APlayer 将在这里渲染 -->
+  </div>
+</div>
+
+<!-- 引入 APlayer -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+<script src="https://cdn.jsdelivr/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+
+<script>
+// 等待DOM加载完成
+document.addEventListener('DOMContentLoaded', function() {
+  // 创建播放器
+  const ap = new APlayer({
+    container: document.getElementById('aplayer-container'),
+    mini: false,
+    fixed: false,
+    autoplay: false,
+    theme: '#667eea',
+    loop: 'all',
+    order: 'random',
+    preload: 'auto',
+    volume: 0.7,
+    mutex: true,
+    listFolded: true,
+    listMaxHeight: '200px',
+    audio: [
+      {
+        name: 'Lemon',
+        artist: '米津玄師',
+        url: 'https://music.163.com/song/media/outer/url?id=536622304.mp3',
+        cover: 'https://p2.music.126.net/T9N7fq7QaZRa4NpP7N4hVg==/109951163088676107.jpg',
+        theme: '#ebd0c2'
+      },
+      {
+        name: '打上花火',
+        artist: 'DAOKO×米津玄師',
+        url: 'https://music.163.com/song/media/outer/url?id=536622303.mp3',
+        cover: 'https://p2.music.126.net/T9N7fq7QaZRa4NpP7N4hVg==/109951163088676107.jpg',
+        theme: '#46718b'
+      },
+      {
+        name: '前前前世',
+        artist: 'RADWIMPS',
+        url: 'https://music.163.com/song/media/outer/url?id=441491828.mp3',
+        cover: 'https://p2.music.126.net/5_2Qz404DZR9RjK2zyvH1Q==/109951163088676107.jpg',
+        theme: '#46718b'
+      }
+    ]
+  });
+
+  // 播放/暂停切换按钮
+  const toggleBtn = document.getElementById('music-toggle');
+  toggleBtn.addEventListener('click', function() {
+    if (ap.audio.paused) {
+      ap.play();
+      toggleBtn.innerHTML = '<i class="fa fa-pause"></i>';
+    } else {
+      ap.pause();
+      toggleBtn.innerHTML = '<i class="fa fa-play"></i>';
+    }
+  });
+
+  // 监听播放状态变化
+  ap.on('play', function() {
+    toggleBtn.innerHTML = '<i class="fa fa-pause"></i>';
+  });
+
+  ap.on('pause', function() {
+    toggleBtn.innerHTML = '<i class="fa fa-play"></i>';
+  });
+});
+</script>
         </div>
       </div>
     </div>
