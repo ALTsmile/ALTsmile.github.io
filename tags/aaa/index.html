@@ -188,7 +188,7 @@
   <div class="cc-license animated" itemprop="license">
     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
   </div>
-<!-- 简洁圆形音乐播放器样式 -->
+/* 简洁圆形音乐播放器样式 */
 <style>
 /* 播放器容器 */
 .mini-music-player {
@@ -196,6 +196,7 @@
   width: 80px;
   height: 80px;
   margin: 20px auto;
+  z-index: 1000; /* 提高层级 */
 }
 
 /* 圆形音乐封面 */
@@ -208,7 +209,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 100;
+  z-index: 1001;
 }
 
 .music-avatar:hover {
@@ -270,28 +271,27 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-/* 音乐控制面板 */
+/* 音乐控制面板 - 修复层级问题 */
 .music-panel {
-  position: absolute;
-  top: 0;
-  left: 90px;
+  position: fixed; /* 改为 fixed 定位 */
   width: 280px;
   background: white;
   border-radius: 12px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.15);
   opacity: 0;
   visibility: hidden;
-  transform: translateX(-10px);
+  transform: translateY(-20px);
   transition: all 0.3s ease;
-  z-index: 99;
+  z-index: 9999; /* 非常高的层级 */
   overflow: hidden;
+  pointer-events: none; /* 默认不可点击 */
 }
 
-.mini-music-player:hover .music-panel,
-.music-panel:hover {
+.music-panel.show {
   opacity: 1;
   visibility: visible;
-  transform: translateX(0);
+  transform: translateY(0);
+  pointer-events: auto; /* 显示时可点击 */
 }
 
 /* 播放列表 */
@@ -587,7 +587,7 @@ let ap = null;
 let isPlaying = false;
 let currentVolume = 0.7;
 let playMode = 'list'; // list: 列表循环, repeat: 单曲循环, random: 随机播放
-let isPanelVisible = false;
+let panelTimeout = null;
 
 // 你的音乐列表
 const musicList = [
@@ -598,14 +598,6 @@ const musicList = [
     cover: '../music-cover/Undying Macula.jpg',
     duration: '02:43',
   },
-  // 你可以在这里添加更多音乐
-  // {
-  //   name: '第二首歌',
-  //   artist: '歌手',
-  //   url: '../music/第二首歌.mp3',
-  //   cover: '../music-cover/第二首歌.jpg',
-  //   duration: '03:20',
-  // },
 ];
 
 // 初始化
@@ -613,6 +605,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initPlayer();
   renderPlaylist();
   setupEventListeners();
+  positionPanel(); // 初始定位面板
 });
 
 function initPlayer() {
@@ -676,6 +669,7 @@ function setupEventListeners() {
   const progressBar = document.getElementById('progress-bar');
   const avatar = document.getElementById('music-avatar');
   const panel = document.getElementById('music-panel');
+  const avatarBtn = document.getElementById('avatar-play-btn');
 
   // 进度条点击
   progressBar.addEventListener('click', function(e) {
@@ -683,31 +677,89 @@ function setupEventListeners() {
   });
 
   // 圆形封面的播放按钮
-  document.getElementById('avatar-play-btn').addEventListener('click', function(e) {
+  avatarBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     togglePlayPause();
   });
 
-  // 防止面板点击时消失
+  // 圆形封面鼠标进入
+  avatar.addEventListener('mouseenter', function(e) {
+    showPanel();
+  });
+
+  // 圆形封面鼠标离开
+  avatar.addEventListener('mouseleave', function(e) {
+    // 延迟隐藏，给鼠标移动到面板的时间
+    panelTimeout = setTimeout(hidePanel, 300);
+  });
+
+  // 面板鼠标进入
   panel.addEventListener('mouseenter', function() {
-    isPanelVisible = true;
-  });
-
-  panel.addEventListener('mouseleave', function() {
-    isPanelVisible = false;
-  });
-
-  // 圆形封面的鼠标事件
-  avatar.addEventListener('mouseenter', function() {
-    isPanelVisible = true;
-  });
-
-  // 文档点击时隐藏面板
-  document.addEventListener('click', function(e) {
-    if (!avatar.contains(e.target) && !panel.contains(e.target)) {
-      isPanelVisible = false;
+    if (panelTimeout) {
+      clearTimeout(panelTimeout);
     }
   });
+
+  // 面板鼠标离开
+  panel.addEventListener('mouseleave', function() {
+    hidePanel();
+  });
+
+  // 窗口滚动时重新定位面板
+  window.addEventListener('scroll', positionPanel);
+  window.addEventListener('resize', positionPanel);
+  
+  // 点击文档其他地方隐藏面板
+  document.addEventListener('click', function(e) {
+    if (!avatar.contains(e.target) && !panel.contains(e.target)) {
+      hidePanel();
+    }
+  });
+}
+
+function showPanel() {
+  const panel = document.getElementById('music-panel');
+  panel.classList.add('show');
+  positionPanel();
+  
+  if (panelTimeout) {
+    clearTimeout(panelTimeout);
+  }
+}
+
+function hidePanel() {
+  const panel = document.getElementById('music-panel');
+  panel.classList.remove('show');
+}
+
+function positionPanel() {
+  const avatar = document.getElementById('music-avatar');
+  const panel = document.getElementById('music-panel');
+  const avatarRect = avatar.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  
+  // 计算面板位置
+  let left = avatarRect.right + 10; // 右侧10px
+  let top = avatarRect.top;
+  
+  // 如果右侧空间不够，显示在左侧
+  if (left + 280 > viewportWidth) {
+    left = avatarRect.left - 280 - 10;
+  }
+  
+  // 如果下方空间不够，向上偏移
+  if (top + 300 > viewportHeight) {
+    top = viewportHeight - 300;
+  }
+  
+  // 如果上方空间不够，向下偏移
+  if (top < 10) {
+    top = 10;
+  }
+  
+  panel.style.left = left + 'px';
+  panel.style.top = top + 'px';
 }
 
 function handleProgressClick(e) {
@@ -764,6 +816,7 @@ function playTrack(index) {
   ap.play();
   updateActivePlaylistItem(index);
   updateTrackInfo();
+  showPanel(); // 切换歌曲时保持面板显示
 }
 
 function updateActivePlaylistItem(index) {
@@ -778,6 +831,7 @@ function togglePlayPause() {
   } else {
     ap.play();
   }
+  showPanel(); // 点击播放按钮时显示面板
 }
 
 function updatePlayButton() {
@@ -814,6 +868,7 @@ function previousTrack() {
     if (!isPlaying) ap.play();
   }
   updateTrackInfo();
+  showPanel(); // 切换歌曲时显示面板
 }
 
 function nextTrack() {
@@ -826,6 +881,7 @@ function nextTrack() {
     if (!isPlaying) ap.play();
   }
   updateTrackInfo();
+  showPanel(); // 切换歌曲时显示面板
 }
 
 function changePlayMode() {
@@ -852,6 +908,7 @@ function changePlayMode() {
   }
   
   updatePlayModeUI();
+  showPanel(); // 切换模式时显示面板
 }
 
 function updatePlayModeUI() {
