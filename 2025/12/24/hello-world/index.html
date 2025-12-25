@@ -602,6 +602,7 @@ let currentVolume = 0.7;
 let playMode = 'list'; // list: 列表循环, repeat: 单曲循环, random: 随机播放
 let panelTimeout = null;
 let isPanelVisible = false;
+let isDraggingProgress = false; // 新增：标记是否在拖拽进度条
 
 // 你的音乐列表
 const musicList = [
@@ -687,9 +688,30 @@ function setupEventListeners() {
   const mainBtn = document.getElementById('main-play-btn');
   const nextBtn = document.getElementById('next-btn');
 
-  // 进度条点击
+  // 进度条点击 - 修复版
+  progressBar.addEventListener('mousedown', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    isDraggingProgress = true;
+    handleProgressSeek(e);
+  });
+
+  // 进度条点击 - 普通点击
   progressBar.addEventListener('click', function(e) {
-    handleProgressClick(e);
+    e.stopPropagation();
+    handleProgressSeek(e);
+  });
+
+  // 鼠标移动时拖拽进度条
+  document.addEventListener('mousemove', function(e) {
+    if (isDraggingProgress) {
+      handleProgressSeek(e);
+    }
+  });
+
+  // 鼠标抬起时停止拖拽
+  document.addEventListener('mouseup', function() {
+    isDraggingProgress = false;
   });
 
   // 按钮事件
@@ -762,21 +784,81 @@ function setupEventListeners() {
   });
 }
 
+// 修复进度条跳转函数
+function handleProgressSeek(e) {
+  if (!ap.audio || !ap.audio.duration) return;
+  
+  const progressBar = document.getElementById('progress-bar');
+  const rect = progressBar.getBoundingClientRect();
+  let x = e.clientX;
+  
+  // 确保x在进度条范围内
+  x = Math.max(rect.left, Math.min(x, rect.right));
+  const percent = (x - rect.left) / rect.width;
+  const targetTime = percent * ap.audio.duration;
+  
+  // 记录当前播放状态
+  const wasPlaying = isPlaying;
+  
+  // 跳转到指定时间
+  ap.audio.currentTime = targetTime;
+  
+  // 更新进度显示
+  updateProgress();
+  
+  // 如果是拖拽操作，不要自动播放
+  if (isDraggingProgress) {
+    // 拖拽时不改变播放状态
+    if (!wasPlaying && ap.audio.paused) {
+      ap.audio.pause(); // 确保暂停状态
+    }
+  } else {
+    // 普通点击时，如果之前是播放状态，继续播放
+    if (wasPlaying && ap.audio.paused) {
+      ap.play();
+    }
+  }
+}
+
+function updateProgress() {
+  if (!ap.audio || !ap.audio.duration || isNaN(ap.audio.duration)) {
+    return;
+  }
+  
+  const currentTime = ap.audio.currentTime || 0;
+  const duration = ap.audio.duration || 0;
+  const percent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  
+  const progress = document.getElementById('progress');
+  if (progress) {
+    progress.style.width = `${percent}%`;
+  }
+  
+  const currentTimeEl = document.getElementById('current-time');
+  const totalTimeEl = document.getElementById('total-time');
+  if (currentTimeEl) currentTimeEl.textContent = formatTime(currentTime);
+  if (totalTimeEl) totalTimeEl.textContent = formatTime(duration);
+}
+
 function showPanel() {
   const panel = document.getElementById('music-panel');
-  panel.classList.add('show');
-  positionPanel();
-  isPanelVisible = true;
-  
-  if (panelTimeout) {
-    clearTimeout(panelTimeout);
+  if (panel) {
+    panel.classList.add('show');
+    positionPanel();
+    isPanelVisible = true;
+    
+    if (panelTimeout) {
+      clearTimeout(panelTimeout);
+    }
   }
 }
 
 function hidePanel() {
   const panel = document.getElementById('music-panel');
-  panel.classList.remove('show');
-  isPanelVisible = false;
+  if (panel) {
+    panel.classList.remove('show');
+    isPanelVisible = false;
+  }
 }
 
 function positionPanel() {
@@ -815,34 +897,6 @@ function positionPanel() {
   
   panel.style.left = left + 'px';
   panel.style.top = top + 'px';
-}
-
-function handleProgressClick(e) {
-  if (!ap.audio || !ap.audio.duration) return;
-  
-  const progressBar = document.getElementById('progress-bar');
-  const rect = progressBar.getBoundingClientRect();
-  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-  const time = percent * ap.audio.duration;
-  
-  ap.seek(time);
-  updateProgress();
-}
-
-function updateProgress() {
-  if (!ap.audio || !ap.audio.duration || isNaN(ap.audio.duration)) {
-    return;
-  }
-  
-  const currentTime = ap.audio.currentTime || 0;
-  const duration = ap.audio.duration || 0;
-  const percent = duration > 0 ? (currentTime / duration) * 100 : 0;
-  
-  const progress = document.getElementById('progress');
-  progress.style.width = `${percent}%`;
-  
-  document.getElementById('current-time').textContent = formatTime(currentTime);
-  document.getElementById('total-time').textContent = formatTime(duration);
 }
 
 function renderPlaylist() {
@@ -898,11 +952,11 @@ function updatePlayButton() {
   const mainIcon = document.getElementById('main-play-icon');
   const mainBtn = document.getElementById('main-play-btn');
   if (isPlaying) {
-    mainIcon.className = 'fa fa-pause';
-    mainBtn.title = '暂停';
+    if (mainIcon) mainIcon.className = 'fa fa-pause';
+    if (mainBtn) mainBtn.title = '暂停';
   } else {
-    mainIcon.className = 'fa fa-play';
-    mainBtn.title = '播放';
+    if (mainIcon) mainIcon.className = 'fa fa-play';
+    if (mainBtn) mainBtn.title = '播放';
   }
 }
 
@@ -910,11 +964,11 @@ function updateAvatarPlayButton() {
   const avatarIcon = document.getElementById('avatar-play-icon');
   const avatarBtn = document.getElementById('avatar-play-btn');
   if (isPlaying) {
-    avatarIcon.className = 'fa fa-pause';
-    avatarBtn.title = '暂停';
+    if (avatarIcon) avatarIcon.className = 'fa fa-pause';
+    if (avatarBtn) avatarBtn.title = '暂停';
   } else {
-    avatarIcon.className = 'fa fa-play';
-    avatarBtn.title = '播放';
+    if (avatarIcon) avatarIcon.className = 'fa fa-play';
+    if (avatarBtn) avatarBtn.title = '播放';
   }
 }
 
