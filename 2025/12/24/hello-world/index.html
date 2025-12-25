@@ -290,7 +290,7 @@ body > .music-avatar-container {
   z-index: 9998;
   overflow: hidden;
   pointer-events: none;
-  max-height: 350px; /* 限制面板最大高度 */
+  max-height: 350px;
   display: flex;
   flex-direction: column;
 }
@@ -334,7 +334,26 @@ body > .music-avatar-container {
   flex: 1;
   overflow-y: auto;
   padding: 0 10px 10px 10px;
-  max-height: 180px; /* 限制播放列表高度 */
+  max-height: 180px;
+}
+
+/* 修复滚动传递问题 */
+.playlist-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.playlist-items::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.playlist-items::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.playlist-items::-webkit-scrollbar-thumb:hover {
+  background: #999;
 }
 
 .playlist-item {
@@ -345,7 +364,8 @@ body > .music-avatar-container {
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 2px;
-  min-height: 36px; /* 减小高度 */
+  min-height: 36px;
+  user-select: none;
 }
 
 .playlist-item:hover {
@@ -482,47 +502,53 @@ body > .music-avatar-container {
   box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
 }
 
-/* 进度条 */
+/* 进度条 - 修复拖拽功能 */
 .progress-container {
   margin-top: 8px;
+  position: relative;
 }
 
 .progress-bar {
-  height: 3px;
+  height: 6px;
   background: #e8e8e8;
-  border-radius: 1.5px;
-  overflow: hidden;
+  border-radius: 3px;
+  overflow: visible;
   cursor: pointer;
   position: relative;
+  user-select: none;
 }
 
 .progress {
   height: 100%;
   background: linear-gradient(90deg, #667eea, #764ba2);
   width: 0%;
-  border-radius: 1.5px;
+  border-radius: 3px;
   position: relative;
   transition: width 0.1s linear;
 }
 
-.progress::after {
-  content: '';
+/* 进度条拖拽点 */
+.progress-thumb {
   position: absolute;
-  right: -4px;
+  right: -6px;
   top: 50%;
   transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
   background: white;
   border: 2px solid #667eea;
   border-radius: 50%;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, transform 0.2s;
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  cursor: pointer;
+  z-index: 10;
 }
 
-.progress-bar:hover .progress::after {
+.progress-bar:hover .progress-thumb,
+.progress-bar.dragging .progress-thumb {
   opacity: 1;
+  transform: translateY(-50%) scale(1.2);
 }
 
 .time-info {
@@ -530,7 +556,7 @@ body > .music-avatar-container {
   justify-content: space-between;
   font-size: 9px;
   color: #999;
-  margin-top: 3px;
+  margin-top: 4px;
   user-select: none;
 }
 
@@ -592,6 +618,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="progress-container">
           <div class="progress-bar" id="progress-bar">
             <div class="progress" id="progress"></div>
+            <div class="progress-thumb" id="progress-thumb"></div>
           </div>
           <div class="time-info">
             <span id="current-time">00:00</span>
@@ -634,6 +661,10 @@ let playMode = 'list'; // list: 列表循环, repeat: 单曲循环, random: 随�
 let panelTimeout = null;
 let isPanelVisible = false;
 let isSeeking = false; // 标记是否正在跳转
+let isDraggingProgress = false; // 标记是否正在拖拽进度条
+let dragStartX = 0; // 拖拽起始X坐标
+let dragStartProgress = 0; // 拖拽起始进度百分比
+let isDraggingFromAvatar = false; // 标记是否从封面开始拖拽
 
 // 你的音乐列表
 const musicList = [
@@ -712,7 +743,7 @@ function initMusicPlayer() {
   });
 
   ap.on('timeupdate', () => {
-    if (!isSeeking) {
+    if (!isSeeking && !isDraggingProgress) {
       updateProgress();
     }
   });
@@ -739,22 +770,53 @@ function setupEventListeners() {
   const avatar = document.getElementById('music-avatar');
   const panel = document.getElementById('music-panel');
   const progressBar = document.getElementById('progress-bar');
+  const progressThumb = document.getElementById('progress-thumb');
+  const playlistItems = document.getElementById('playlist');
   const avatarBtn = document.getElementById('avatar-play-btn');
   const modeBtn = document.getElementById('mode-btn');
   const prevBtn = document.getElementById('prev-btn');
   const mainBtn = document.getElementById('main-play-btn');
   const nextBtn = document.getElementById('next-btn');
 
-  // 进度条事件
-  progressBar.addEventListener('mousedown', function(e) {
+  // 修复1: 滚动传递问题
+  playlistItems.addEventListener('wheel', function(e) {
     e.stopPropagation();
-    e.preventDefault();
-    handleProgressSeek(e, true);
+  }, { passive: false });
+
+  // 修复2: 封面鼠标离开立即隐藏面板
+  avatar.addEventListener('mouseenter', function(e) {
+    e.stopPropagation();
+    isDraggingFromAvatar = false;
+    showPanel();
   });
 
+  avatar.addEventListener('mouseleave', function(e) {
+    e.stopPropagation();
+    if (!isPanelVisible && !isDraggingFromAvatar) {
+      hidePanel();
+    }
+  });
+
+  // 鼠标从封面拖到面板
+  avatar.addEventListener('mousedown', function(e) {
+    isDraggingFromAvatar = true;
+  });
+
+  document.addEventListener('mouseup', function(e) {
+    isDraggingFromAvatar = false;
+  });
+
+  // 修复3: 进度条拖拽功能
+  progressBar.addEventListener('mousedown', handleProgressDragStart);
+  progressThumb.addEventListener('mousedown', handleProgressDragStart);
+
+  document.addEventListener('mousemove', handleProgressDrag);
+  document.addEventListener('mouseup', handleProgressDragEnd);
+
+  // 进度条点击
   progressBar.addEventListener('click', function(e) {
     e.stopPropagation();
-    handleProgressSeek(e, false);
+    handleProgressClick(e);
   });
 
   // 按钮事件
@@ -781,20 +843,6 @@ function setupEventListeners() {
   nextBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     nextTrack();
-  });
-
-  // 圆形封面鼠标进入
-  avatar.addEventListener('mouseenter', function(e) {
-    e.stopPropagation();
-    showPanel();
-  });
-
-  // 圆形封面鼠标离开
-  avatar.addEventListener('mouseleave', function(e) {
-    e.stopPropagation();
-    if (!isPanelVisible) {
-      panelTimeout = setTimeout(hidePanel, 300);
-    }
   });
 
   // 面板鼠标进入
@@ -827,7 +875,104 @@ function setupEventListeners() {
   });
 }
 
-function handleProgressSeek(e, isDrag) {
+// 进度条拖拽功能
+function handleProgressDragStart(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  
+  if (!ap.audio || !ap.audio.duration) return;
+  
+  isDraggingProgress = true;
+  progressBar.classList.add('dragging');
+  
+  const rect = progressBar.getBoundingClientRect();
+  dragStartX = e.clientX;
+  dragStartProgress = (ap.audio.currentTime || 0) / ap.audio.duration;
+  
+  // 记录当前播放状态
+  const wasPlaying = isPlaying;
+  if (wasPlaying) {
+    // 暂停播放以便拖拽
+    ap.pause();
+  }
+  
+  // 更新进度显示
+  updateProgressDisplay(dragStartProgress);
+  
+  // 标记正在跳转
+  isSeeking = true;
+}
+
+function handleProgressDrag(e) {
+  if (!isDraggingProgress || !ap.audio || !ap.audio.duration) return;
+  
+  e.preventDefault();
+  e.stopPropagation();
+  
+  const rect = progressBar.getBoundingClientRect();
+  const deltaX = e.clientX - dragStartX;
+  const deltaPercent = deltaX / rect.width;
+  let newProgress = dragStartProgress + deltaPercent;
+  
+  // 限制在0-1之间
+  newProgress = Math.max(0, Math.min(1, newProgress));
+  
+  // 更新显示
+  updateProgressDisplay(newProgress);
+}
+
+function handleProgressDragEnd(e) {
+  if (!isDraggingProgress || !ap.audio || !ap.audio.duration) return;
+  
+  e.preventDefault();
+  e.stopPropagation();
+  
+  isDraggingProgress = false;
+  progressBar.classList.remove('dragging');
+  
+  const rect = progressBar.getBoundingClientRect();
+  const deltaX = e.clientX - dragStartX;
+  const deltaPercent = deltaX / rect.width;
+  let newProgress = dragStartProgress + deltaPercent;
+  
+  // 限制在0-1之间
+  newProgress = Math.max(0, Math.min(1, newProgress));
+  const targetTime = newProgress * ap.audio.duration;
+  
+  // 跳转到指定时间
+  ap.seek(targetTime);
+  
+  // 继续播放
+  if (isPlaying) {
+    ap.play();
+  }
+  
+  // 清除 seeking 标记
+  setTimeout(() => {
+    isSeeking = false;
+  }, 100);
+}
+
+function updateProgressDisplay(percent) {
+  const progress = document.getElementById('progress');
+  const progressThumb = document.getElementById('progress-thumb');
+  const currentTimeEl = document.getElementById('current-time');
+  
+  if (progress) {
+    progress.style.width = `${percent * 100}%`;
+  }
+  
+  if (progressThumb) {
+    progressThumb.style.opacity = '1';
+  }
+  
+  if (currentTimeEl && ap.audio && ap.audio.duration) {
+    const targetTime = percent * ap.audio.duration;
+    currentTimeEl.textContent = formatTime(targetTime);
+  }
+}
+
+function handleProgressClick(e) {
   if (!ap.audio || !ap.audio.duration) return;
   
   const progressBar = document.getElementById('progress-bar');
@@ -842,27 +987,12 @@ function handleProgressSeek(e, isDrag) {
   isSeeking = true;
   
   ap.seek(targetTime);
+  updateProgressDisplay(percent);
   
-  const progress = document.getElementById('progress');
-  if (progress) {
-    progress.style.width = `${percent * 100}%`;
-  }
-  
-  const currentTimeEl = document.getElementById('current-time');
-  if (currentTimeEl) {
-    currentTimeEl.textContent = formatTime(targetTime);
-  }
-  
-  if (isDrag) {
-    if (!wasPlaying) {
-      ap.pause();
-    }
-  } else {
-    if (wasPlaying) {
-      setTimeout(() => {
-        ap.play();
-      }, 10);
-    }
+  if (wasPlaying) {
+    setTimeout(() => {
+      ap.play();
+    }, 10);
   }
   
   setTimeout(() => {
@@ -871,7 +1001,7 @@ function handleProgressSeek(e, isDrag) {
 }
 
 function updateProgress() {
-  if (!ap.audio || !ap.audio.duration || isNaN(ap.audio.duration) || isSeeking) {
+  if (!ap.audio || !ap.audio.duration || isNaN(ap.audio.duration) || isSeeking || isDraggingProgress) {
     return;
   }
   
@@ -918,9 +1048,8 @@ function positionPanel() {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const panelWidth = 280;
-  const panelHeight = 320; // 稍微减小面板高度
+  const panelHeight = 320;
   
-  // 计算位置
   let left = avatarRect.right + 10;
   let top = avatarRect.top;
   
@@ -932,7 +1061,6 @@ function positionPanel() {
     left = 20;
   }
   
-  // 确保面板不会超出屏幕底部
   if (top + panelHeight > viewportHeight - 20) {
     top = viewportHeight - panelHeight - 20;
   }
