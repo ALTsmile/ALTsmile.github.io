@@ -585,13 +585,26 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // 自动计算正确的路径
-  function getMusicPath(relativePath) {
+  function getCorrectPath(relativePath) {
     const currentPath = window.location.pathname;
-    // 如果是文章页面（在source目录下），返回上级目录
-    if (currentPath.includes('/source/')) {
+    const currentUrl = window.location.href;
+    
+    // 如果当前页面是 _posts 目录下的文章页面
+    if (currentPath.includes('/_posts/') || currentPath.includes('/categories/') || 
+        currentPath.includes('/tags/') || currentPath.includes('/about/')) {
+      // 这些页面在 source 目录下，需要返回上级目录
       return '../' + relativePath;
     }
-    // 根目录直接返回相对路径
+    
+    // 如果是文章详情页（通常是 /年/月/日/文章名/ 格式）
+    const pathParts = currentPath.split('/').filter(p => p);
+    if (pathParts.length >= 4 && /^\d{4}$/.test(pathParts[0]) && /^\d{2}$/.test(pathParts[1])) {
+      // 计算需要返回多少级目录才能到 source 目录
+      const levelsUp = pathParts.length;
+      return '../'.repeat(levelsUp) + relativePath;
+    }
+    
+    // 主页或其他页面，使用相对路径
     return relativePath;
   }
   
@@ -601,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
   container.innerHTML = `
     <!-- 圆形音乐封面 -->
     <div class="music-avatar" id="music-avatar">
-      <img src="${getMusicPath('music-cover/Undying Macula.jpg')}" alt="专辑封面" class="music-avatar-img" id="avatar-img" onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\"><rect width=\"24\" height=\"24\" fill=\"%23667eea\"/><text x=\"12\" y=\"16\" font-family=\"Arial\" font-size=\"12\" fill=\"white\" text-anchor=\"middle\">Music</text></svg>'">
+      <img src="${getCorrectPath('music-cover/Undying Macula.jpg')}" alt="专辑封面" class="music-avatar-img" id="avatar-img" onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\"><rect width=\"24\" height=\"24\" fill=\"%23667eea\"/><text x=\"12\" y=\"16\" font-family=\"Arial\" font-size=\"12\" fill=\"white\" text-anchor=\"middle\">Music</text></svg>'">
       <div class="play-overlay">
         <button class="play-btn" id="avatar-play-btn" title="播放/暂停">
           <i class="fa fa-play" id="avatar-play-icon"></i>
@@ -679,7 +692,35 @@ let isDraggingProgress = false;
 let lastRandomIndex = -1;
 let currentTrackIndex = 0;
 
-// 音乐列表
+// 自动计算当前页面的基础路径
+function getBasePath() {
+  const currentPath = window.location.pathname;
+  const currentUrl = window.location.href;
+  
+  // 调试信息
+  console.log('当前路径:', currentPath);
+  console.log('当前URL:', currentUrl);
+  
+  // 如果当前页面是 _posts 目录下的文章页面
+  if (currentPath.includes('/_posts/') || currentPath.includes('/categories/') || 
+      currentPath.includes('/tags/') || currentPath.includes('/about/')) {
+    // 这些页面在 source 目录下，需要返回上级目录
+    return '../';
+  }
+  
+  // 如果是文章详情页（Hexo格式：/年/月/日/文章名/）
+  const pathParts = currentPath.split('/').filter(p => p);
+  if (pathParts.length >= 4 && /^\d{4}$/.test(pathParts[0]) && /^\d{2}$/.test(pathParts[1])) {
+    // 计算需要返回多少级目录才能到根目录
+    const levelsUp = pathParts.length;
+    return '../'.repeat(levelsUp);
+  }
+  
+  // 主页或其他页面，使用相对路径
+  return './';
+}
+
+// 音乐列表 - 使用动态路径
 const musicList = [
   {
     name: 'Undying Macula',
@@ -718,16 +759,20 @@ function initMusicPlayer() {
   playerContainer.style.display = 'none';
   document.body.appendChild(playerContainer);
   
+  // 获取基础路径
+  const basePath = getBasePath();
+  console.log('计算的基础路径:', basePath);
+  
   // 修正音乐文件路径
   const correctedMusicList = musicList.map(track => {
-    const currentPath = window.location.pathname;
-    const basePath = currentPath.includes('/source/') ? '../' : './';
     return {
       ...track,
       url: basePath + track.url,
       cover: basePath + track.cover
     };
   });
+  
+  console.log('修正后的音乐列表:', correctedMusicList);
   
   // 初始化 APlayer
   ap = new APlayer({
@@ -822,7 +867,10 @@ function setupEventListeners() {
   const mainBtn = document.getElementById('main-play-btn');
   const nextBtn = document.getElementById('next-btn');
 
-  if (!avatar || !panel || !progressBar) return;
+  if (!avatar || !panel || !progressBar) {
+    console.error('播放器元素未找到');
+    return;
+  }
 
   // 滚动传递问题
   playlistItems.addEventListener('wheel', function(e) {
@@ -1099,7 +1147,14 @@ function renderPlaylist() {
   
   playlistEl.innerHTML = '';
   
-  musicList.forEach((track, index) => {
+  const basePath = getBasePath();
+  const correctedMusicList = musicList.map(track => ({
+    ...track,
+    url: basePath + track.url,
+    cover: basePath + track.cover
+  }));
+  
+  correctedMusicList.forEach((track, index) => {
     const item = document.createElement('div');
     item.className = 'playlist-item';
     if (index === 0) item.classList.add('active');
@@ -1283,7 +1338,14 @@ function updatePlayModeUI() {
 }
 
 function updateTrackInfo() {
-  const current = musicList[ap.list.index];
+  const basePath = getBasePath();
+  const correctedMusicList = musicList.map(track => ({
+    ...track,
+    url: basePath + track.url,
+    cover: basePath + track.cover
+  }));
+  
+  const current = correctedMusicList[ap.list.index];
   if (!current) return;
   
   const trackName = document.getElementById('current-track-name');
@@ -1294,9 +1356,7 @@ function updateTrackInfo() {
   if (trackName) trackName.textContent = current.name;
   if (trackArtist) trackArtist.textContent = current.artist;
   if (avatarImg) {
-    const currentPath = window.location.pathname;
-    const basePath = currentPath.includes('/source/') ? '../' : './';
-    avatarImg.src = basePath + current.cover;
+    avatarImg.src = current.cover;
   }
   if (totalTime) totalTime.textContent = current.duration;
   
