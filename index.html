@@ -169,9 +169,14 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">1</span>
           <span class="site-state-item-name">日志</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
 </div>
@@ -566,7 +571,6 @@
 }
 
 .play-mode-indicator.list { background: #667eea; }
-.play-mode-indicator.repeat { background: #52c41a; }
 .play-mode-indicator.random { background: #f5222d; }
 </style>
 
@@ -651,7 +655,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <!-- 控制按钮 -->
         <div class="controls-group">
           <button class="control-btn" id="mode-btn" title="播放模式">
-            <i class="fa fa-list-ol" id="mode-icon"></i>
+            <i class="fa fa-random" id="mode-icon"></i>
           </button>
           <button class="control-btn" id="prev-btn" title="上一首">
             <i class="fa fa-step-backward"></i>
@@ -679,16 +683,13 @@ document.addEventListener('DOMContentLoaded', function() {
 let ap = null;
 let isPlaying = false;
 let currentVolume = 0.7;
-let playMode = 'list';
+let playMode = 'list'; // 只有 'list' 和 'random' 两种模式
 let panelTimeout = null;
 let isPanelVisible = false;
 let isSeeking = false;
 let isDraggingProgress = false;
 let lastRandomIndex = -1;
 let currentTrackIndex = 0;
-let repeatTimeout = null; // 单曲循环计时器
-let isManualSwitch = false; // 标记是否是手动切换
-let isProcessingEnd = false; // 防止重复处理结束事件
 
 // 自动计算当前页面的基础路径
 function getBasePath() {
@@ -765,12 +766,12 @@ function initMusicPlayer() {
     };
   });
   
-  // 修复：使用正确的循环设置
+  // 简化：始终使用列表循环
   ap = new APlayer({
     container: document.getElementById('aplayer-hidden-container'),
     audio: correctedMusicList,
     theme: '#667eea',
-    loop: 'all', // 列表循环模式
+    loop: 'all', // 始终使用全部循环
     order: 'list',
     preload: 'auto',
     volume: currentVolume,
@@ -819,32 +820,6 @@ function initMusicPlayer() {
     currentTrackIndex = index.item;
     updateTrackInfo();
     updateActivePlaylistItem(index.item);
-  });
-  
-  // 修复：在 ended 事件中处理单曲循环
-  ap.on('ended', () => {
-    if (isProcessingEnd) return;
-    
-    console.log('歌曲播放结束，当前模式:', playMode);
-    
-    if (playMode === 'repeat') {
-      // 单曲循环：重新播放当前歌曲
-      console.log('单曲循环：准备重新播放');
-      isProcessingEnd = true;
-      
-      // 重置到开始位置
-      setTimeout(() => {
-        ap.seek(0);
-        setTimeout(() => {
-          if (isPlaying) {
-            ap.play();
-            console.log('单曲循环：已重新播放');
-          }
-          isProcessingEnd = false;
-        }, 100);
-      }, 300);
-    }
-    // 列表循环和随机播放由 APlayer 的 loop: 'all' 自动处理
   });
   
   // 初始化 UI
@@ -963,7 +938,6 @@ function setupEventListeners() {
 
   prevBtn.addEventListener('click', function(e) {
     e.stopPropagation();
-    isManualSwitch = true;
     previousTrack();
   });
 
@@ -974,7 +948,6 @@ function setupEventListeners() {
 
   nextBtn.addEventListener('click', function(e) {
     e.stopPropagation();
-    isManualSwitch = true;
     nextTrack();
   });
 
@@ -1177,7 +1150,6 @@ function renderPlaylist() {
 
 function playTrack(index) {
   currentTrackIndex = index;
-  isManualSwitch = true;
   
   if (playMode === 'random') {
     lastRandomIndex = index;
@@ -1264,9 +1236,9 @@ function nextTrack() {
 }
 
 function changePlayMode() {
+  // 只有两种模式：列表循环和随机播放
   const modes = [
     { id: 'list', name: '列表循环', icon: 'fa-list-ol' },
-    { id: 'repeat', name: '单曲循环', icon: 'fa-repeat' },
     { id: 'random', name: '随机播放', icon: 'fa-random' }
   ];
   
@@ -1274,17 +1246,9 @@ function changePlayMode() {
   const nextIndex = (currentIndex + 1) % modes.length;
   playMode = modes[nextIndex].id;
   
-  // 修复：根据播放模式设置 APlayer 的 loop
-  if (playMode === 'repeat') {
-    // 单曲循环：设置为无循环，我们自己处理
-    ap.loop = 'none';
-  } else if (playMode === 'random') {
-    // 随机播放：设置为全部循环
-    ap.loop = 'all';
+  if (playMode === 'random') {
+    // 初始化随机播放
     lastRandomIndex = -1;
-  } else {
-    // 列表循环：设置为全部循环
-    ap.loop = 'all';
   }
   
   updatePlayModeUI();
@@ -1302,10 +1266,6 @@ function updatePlayModeUI() {
     title = '列表循环';
     icon = 'fa-list-ol';
     indicatorClass = 'list';
-  } else if (playMode === 'repeat') {
-    title = '单曲循环';
-    icon = 'fa-repeat';
-    indicatorClass = 'repeat';
   } else if (playMode === 'random') {
     title = '随机播放';
     icon = 'fa-random';
@@ -1374,7 +1334,7 @@ function formatTime(seconds) {
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2025/12/25/aaa/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/12/25/%E5%9C%A8hexo%E7%9A%84NexT%E4%B8%BB%E9%A2%98%E4%B8%8A%E4%B8%8A%E4%BC%A0%E9%9F%B3%E4%B9%90%E5%B9%B6%E8%AE%BE%E6%92%AD%E6%94%BE%E5%99%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1392,91 +1352,7 @@ function formatTime(seconds) {
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/12/25/aaa/" class="post-title-link" itemprop="url">aaa</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-  
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2025-12-25 20:58:20" itemprop="dateCreated datePublished" datetime="2025-12-25T20:58:20+08:00">2025-12-25</time>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>0</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2025/12/25/%E5%9C%A8hexo%E7%9A%84NexT%E4%B8%BB%E9%A2%98%E4%B8%8A%E4%B8%8A%E4%BC%A0%E9%9F%B3%E4%B9%90%E5%B9%B6%E6%92%AD%E6%94%BE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="小小笑意">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="小小笑意">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 小小笑意">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/12/25/%E5%9C%A8hexo%E7%9A%84NexT%E4%B8%BB%E9%A2%98%E4%B8%8A%E4%B8%8A%E4%BC%A0%E9%9F%B3%E4%B9%90%E5%B9%B6%E6%92%AD%E6%94%BE/" class="post-title-link" itemprop="url">在hexo的NexT主题上上传音乐并播放</a>
+          <a href="/2025/12/25/%E5%9C%A8hexo%E7%9A%84NexT%E4%B8%BB%E9%A2%98%E4%B8%8A%E4%B8%8A%E4%BC%A0%E9%9F%B3%E4%B9%90%E5%B9%B6%E8%AE%BE%E6%92%AD%E6%94%BE%E5%99%A8/" class="post-title-link" itemprop="url">在hexo的NexT主题上上传音乐并设播放器</a>
         </h2>
 
         <div class="post-meta-container">
@@ -1490,6 +1366,13 @@ function formatTime(seconds) {
 
       <time title="创建时间：2025-12-25 20:46:04" itemprop="dateCreated datePublished" datetime="2025-12-25T20:46:04+08:00">2025-12-25</time>
     </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-12-26 22:18:11" itemprop="dateModified" datetime="2025-12-26T22:18:11+08:00">2025-12-26</time>
+    </span>
 
   
     <span class="post-meta-break"></span>
@@ -1498,7 +1381,7 @@ function formatTime(seconds) {
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>0</span>
+      <span>336</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -1516,7 +1399,17 @@ function formatTime(seconds) {
     
     
     <div class="post-body" itemprop="articleBody">
-          
+          <p>本来想用网易云外链简单明了的，结果发现有些歌曲网易云要vip，我就想着能不能上传本地音乐到仓库，然后让AI写个简单的播放器功能</p>
+<h3 id="1-下载Aplayer插件并配置"><a href="#1-下载Aplayer插件并配置" class="headerlink" title="1. 下载Aplayer插件并配置"></a>1. 下载Aplayer插件并配置</h3><p>下载Aplayer插件</p>
+<hr>
+<p>npm install hexo-tag-aplayer –save</p>
+<hr>
+<p>然后在NexT的配置文件<code>_config.yml</code>中在最后一行输入以下配置信息</p>
+<hr>
+<p>aplayer:<br>  cdn: <a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js">https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js</a><br>  style_cdn: <a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css</a><br>  meting: true # 如果要使用 MetingJS</p>
+<hr>
+<h3 id="2-配置一个音乐播放器"><a href="#2-配置一个音乐播放器" class="headerlink" title="2. 配置一个音乐播放器"></a>2. 配置一个音乐播放器</h3><p>这一步比较麻烦</p>
+
       
     </div>
 

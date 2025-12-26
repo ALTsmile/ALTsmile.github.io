@@ -172,9 +172,14 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">1</span>
           <span class="site-state-item-name">日志</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
 </div>
@@ -569,7 +574,6 @@
 }
 
 .play-mode-indicator.list { background: #667eea; }
-.play-mode-indicator.repeat { background: #52c41a; }
 .play-mode-indicator.random { background: #f5222d; }
 </style>
 
@@ -654,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <!-- 控制按钮 -->
         <div class="controls-group">
           <button class="control-btn" id="mode-btn" title="播放模式">
-            <i class="fa fa-list-ol" id="mode-icon"></i>
+            <i class="fa fa-random" id="mode-icon"></i>
           </button>
           <button class="control-btn" id="prev-btn" title="上一首">
             <i class="fa fa-step-backward"></i>
@@ -682,16 +686,13 @@ document.addEventListener('DOMContentLoaded', function() {
 let ap = null;
 let isPlaying = false;
 let currentVolume = 0.7;
-let playMode = 'list';
+let playMode = 'list'; // 只有 'list' 和 'random' 两种模式
 let panelTimeout = null;
 let isPanelVisible = false;
 let isSeeking = false;
 let isDraggingProgress = false;
 let lastRandomIndex = -1;
 let currentTrackIndex = 0;
-let repeatTimeout = null; // 单曲循环计时器
-let isManualSwitch = false; // 标记是否是手动切换
-let isProcessingEnd = false; // 防止重复处理结束事件
 
 // 自动计算当前页面的基础路径
 function getBasePath() {
@@ -768,12 +769,12 @@ function initMusicPlayer() {
     };
   });
   
-  // 修复：使用正确的循环设置
+  // 简化：始终使用列表循环
   ap = new APlayer({
     container: document.getElementById('aplayer-hidden-container'),
     audio: correctedMusicList,
     theme: '#667eea',
-    loop: 'all', // 列表循环模式
+    loop: 'all', // 始终使用全部循环
     order: 'list',
     preload: 'auto',
     volume: currentVolume,
@@ -822,32 +823,6 @@ function initMusicPlayer() {
     currentTrackIndex = index.item;
     updateTrackInfo();
     updateActivePlaylistItem(index.item);
-  });
-  
-  // 修复：在 ended 事件中处理单曲循环
-  ap.on('ended', () => {
-    if (isProcessingEnd) return;
-    
-    console.log('歌曲播放结束，当前模式:', playMode);
-    
-    if (playMode === 'repeat') {
-      // 单曲循环：重新播放当前歌曲
-      console.log('单曲循环：准备重新播放');
-      isProcessingEnd = true;
-      
-      // 重置到开始位置
-      setTimeout(() => {
-        ap.seek(0);
-        setTimeout(() => {
-          if (isPlaying) {
-            ap.play();
-            console.log('单曲循环：已重新播放');
-          }
-          isProcessingEnd = false;
-        }, 100);
-      }, 300);
-    }
-    // 列表循环和随机播放由 APlayer 的 loop: 'all' 自动处理
   });
   
   // 初始化 UI
@@ -966,7 +941,6 @@ function setupEventListeners() {
 
   prevBtn.addEventListener('click', function(e) {
     e.stopPropagation();
-    isManualSwitch = true;
     previousTrack();
   });
 
@@ -977,7 +951,6 @@ function setupEventListeners() {
 
   nextBtn.addEventListener('click', function(e) {
     e.stopPropagation();
-    isManualSwitch = true;
     nextTrack();
   });
 
@@ -1180,7 +1153,6 @@ function renderPlaylist() {
 
 function playTrack(index) {
   currentTrackIndex = index;
-  isManualSwitch = true;
   
   if (playMode === 'random') {
     lastRandomIndex = index;
@@ -1267,9 +1239,9 @@ function nextTrack() {
 }
 
 function changePlayMode() {
+  // 只有两种模式：列表循环和随机播放
   const modes = [
     { id: 'list', name: '列表循环', icon: 'fa-list-ol' },
-    { id: 'repeat', name: '单曲循环', icon: 'fa-repeat' },
     { id: 'random', name: '随机播放', icon: 'fa-random' }
   ];
   
@@ -1277,17 +1249,9 @@ function changePlayMode() {
   const nextIndex = (currentIndex + 1) % modes.length;
   playMode = modes[nextIndex].id;
   
-  // 修复：根据播放模式设置 APlayer 的 loop
-  if (playMode === 'repeat') {
-    // 单曲循环：设置为无循环，我们自己处理
-    ap.loop = 'none';
-  } else if (playMode === 'random') {
-    // 随机播放：设置为全部循环
-    ap.loop = 'all';
+  if (playMode === 'random') {
+    // 初始化随机播放
     lastRandomIndex = -1;
-  } else {
-    // 列表循环：设置为全部循环
-    ap.loop = 'all';
   }
   
   updatePlayModeUI();
@@ -1305,10 +1269,6 @@ function updatePlayModeUI() {
     title = '列表循环';
     icon = 'fa-list-ol';
     indicatorClass = 'list';
-  } else if (playMode === 'repeat') {
-    title = '单曲循环';
-    icon = 'fa-repeat';
-    indicatorClass = 'repeat';
   } else if (playMode === 'random') {
     title = '随机播放';
     icon = 'fa-random';
