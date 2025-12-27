@@ -1389,14 +1389,14 @@ function formatTime(seconds) {
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>22k</span>
+      <span>24k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>20 分钟</span>
+      <span>22 分钟</span>
     </span>
 </div>
 
@@ -1415,10 +1415,10 @@ function formatTime(seconds) {
 <ul>
 <li>然后在NexT的配置文件<code>_config.yml</code>中在最后一行输入以下配置信息</li>
 </ul>
-<pre><code>aplayer:
-  cdn: https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js
-  style_cdn: https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css
-  meting: true # 如果要使用 MetingJS</code></pre>
+<div class="shiki" data-theme="github-light"><pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>aplayer:</span></span>
+<span class="line"><span>  cdn: https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js</span></span>
+<span class="line"><span>  style_cdn: https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css</span></span>
+<span class="line"><span>  meting: true # 如果要使用 MetingJS</span></span></code></pre></div>
 
 <h2 id="2-配置一个音乐播放器"><a href="#2-配置一个音乐播放器" class="headerlink" title="2. 配置一个音乐播放器"></a>2. 配置一个音乐播放器</h2><p>这一步比较麻烦  </p>
 <ul>
@@ -1433,1132 +1433,1132 @@ function formatTime(seconds) {
 <li>配置音乐播放器</li>
 </ul>
 <p>在<code>source/_data</code>下新建一个文件<code>sidebar-music.njk</code>，然后找AI生成代码，我这边已经调试了很久，把代码复制粘贴上去即可</p>
-<pre><code><style>
-/* 音乐播放器容器 - 固定在右下角 */
-.music-player-container &#123;
-  position: fixed;
-  bottom: 100px;
-  right: 30px;
-  z-index: 9999;
-  width: 80px;
-  height: 80px;
-&#125;
-
-/* 圆形音乐封面 */
-.music-avatar &#123;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  overflow: hidden;
-  position: relative;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 10000;
-&#125;
-
-.music-avatar:hover &#123;
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-&#125;
-
-.music-avatar-img &#123;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: brightness(0.7);
-  transition: filter 0.3s ease;
-&#125;
-
-.music-avatar:hover .music-avatar-img &#123;
-  filter: brightness(1);
-&#125;
-
-/* 播放按钮覆盖层 */
-.play-overlay &#123;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.3);
-  border-radius: 50%;
-  opacity: 1;
-  transition: opacity 0.3s ease, background 0.3s ease;
-&#125;
-
-.music-avatar:hover .play-overlay &#123;
-  background: rgba(0,0,0,0.2);
-&#125;
-
-.play-btn &#123;
-  background: rgba(255,255,255,0.9);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #667eea;
-  font-size: 18px;
-  transition: all 0.3s ease;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-&#125;
-
-.play-btn:hover &#123;
-  background: white;
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-&#125;
-
-/* 音乐控制面板 */
-.music-panel &#123;
-  position: fixed;
-  width: 280px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-20px);
-  transition: all 0.3s ease;
-  z-index: 9998;
-  overflow: hidden;
-  pointer-events: none;
-  max-height: 350px;
-  display: flex;
-  flex-direction: column;
-&#125;
-
-.music-panel.show &#123;
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
-&#125;
-
-/* 播放列表 */
-.playlist-section &#123;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-bottom: 1px solid #f0f0f0;
-&#125;
-
-.playlist-header &#123;
-  padding: 12px 15px 8px 15px;
-  background: white;
-  border-bottom: 1px solid #f0f0f0;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  flex-shrink: 0;
-&#125;
-
-.playlist-title &#123;
-  font-size: 12px;
-  color: #999;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 500;
-  margin: 0;
-&#125;
-
-.playlist-items &#123;
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 10px 10px 10px;
-  max-height: 180px;
-&#125;
-
-.playlist-items &#123;
-  overscroll-behavior: contain;
-&#125;
-
-.playlist-items::-webkit-scrollbar &#123;
-  width: 6px;
-&#125;
-
-.playlist-items::-webkit-scrollbar-track &#123;
-  background: #f5f5f5;
-  border-radius: 3px;
-&#125;
-
-.playlist-items::-webkit-scrollbar-thumb &#123;
-  background: #ccc;
-  border-radius: 3px;
-&#125;
-
-.playlist-items::-webkit-scrollbar-thumb:hover &#123;
-  background: #999;
-&#125;
-
-.playlist-item &#123;
-  display: flex;
-  align-items: center;
-  padding: 6px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 2px;
-  min-height: 36px;
-  user-select: none;
-&#125;
-
-.playlist-item:hover &#123;
-  background: #f8f9fa;
-&#125;
-
-.playlist-item.active &#123;
-  background: #e6f7ff;
-  color: #1890ff;
-&#125;
-
-.playlist-num &#123;
-  width: 18px;
-  height: 18px;
-  background: #f5f5f5;
-  color: #666;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 500;
-  margin-right: 8px;
-  flex-shrink: 0;
-&#125;
-
-.playlist-item.active .playlist-num &#123;
-  background: #1890ff;
-  color: white;
-&#125;
-
-.playlist-info &#123;
-  flex: 1;
-  min-width: 0;
-  margin-right: 5px;
-&#125;
-
-.playlist-track &#123;
-  font-size: 12px;
-  font-weight: 500;
-  color: #333;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.2;
-&#125;
-
-.playlist-artist &#123;
-  font-size: 10px;
-  color: #999;
-  margin-top: 1px;
-  line-height: 1.2;
-&#125;
-
-.playlist-duration &#123;
-  font-size: 10px;
-  color: #999;
-  flex-shrink: 0;
-&#125;
-
-/* 控制栏 */
-.controls-section &#123;
-  padding: 12px 15px;
-  background: #fafafa;
-  flex-shrink: 0;
-  border-top: 1px solid #eee;
-&#125;
-
-/* 当前播放信息 */
-.current-track &#123;
-  margin-bottom: 10px;
-  text-align: center;
-&#125;
-
-.track-name &#123;
-  font-size: 13px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.2;
-&#125;
-
-.track-artist &#123;
-  font-size: 11px;
-  color: #666;
-  line-height: 1.2;
-&#125;
-
-/* 控制按钮组 */
-.controls-group &#123;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-&#125;
-
-.control-btn &#123;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: none;
-  background: white;
-  color: #666;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  font-size: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-&#125;
-
-.control-btn:hover &#123;
-  background: #667eea;
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.4);
-&#125;
-
-.control-btn.main &#123;
-  width: 36px;
-  height: 36px;
-  font-size: 14px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
-&#125;
-
-.control-btn.main:hover &#123;
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
-&#125;
-
-/* 进度条 */
-.progress-container &#123;
-  margin-top: 8px;
-  position: relative;
-&#125;
-
-.progress-bar &#123;
-  height: 4px;
-  background: #e8e8e8;
-  border-radius: 2px;
-  cursor: pointer;
-  position: relative;
-  user-select: none;
-  touch-action: none;
-&#125;
-
-.progress &#123;
-  height: 100%;
-  background: linear-gradient(90deg, #667eea, #764ba2);
-  width: 0%;
-  border-radius: 2px;
-  position: relative;
-  transition: width 0.1s linear;
-  pointer-events: none;
-&#125;
-
-/* 进度条拖拽点 */
-.progress::after &#123;
-  content: '';
-  position: absolute;
-  right: -5px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 10px;
-  height: 10px;
-  background: white;
-  border: 2px solid #667eea;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.2s, transform 0.2s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  pointer-events: none;
-&#125;
-
-.progress-bar:hover .progress::after,
-.progress-bar.dragging .progress::after &#123;
-  opacity: 1;
-  transform: translateY(-50%) scale(1);
-&#125;
-
-.time-info &#123;
-  display: flex;
-  justify-content: space-between;
-  font-size: 9px;
-  color: #999;
-  margin-top: 4px;
-  user-select: none;
-&#125;
-
-/* 播放模式指示器 */
-.play-mode-indicator &#123;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-right: 6px;
-  background: #667eea;
-  transition: background 0.3s ease;
-  flex-shrink: 0;
-&#125;
-
-.play-mode-indicator.list &#123; background: #667eea; &#125;
-.play-mode-indicator.random &#123; background: #f5222d; &#125;
-</style>
-
-<script>
-// 等待页面加载完成后初始化播放器
-document.addEventListener('DOMContentLoaded', function() &#123;
-  // 检查是否已经存在播放器容器
-  if (document.querySelector('.music-player-container')) &#123;
-    console.log('音乐播放器已存在');
-    return;
-  &#125;
-  
-  // 自动计算正确的路径
-  function getCorrectPath(relativePath) &#123;
-    const currentPath = window.location.pathname;
-    const currentUrl = window.location.href;
-    
-    // 如果当前页面是 _posts 目录下的文章页面
-    if (currentPath.includes('/_posts/') || currentPath.includes('/categories/') || 
-        currentPath.includes('/tags/') || currentPath.includes('/about/')) &#123;
-      // 这些页面在 source 目录下，需要返回上级目录
-      return '../' + relativePath;
-    &#125;
-    
-    // 如果是文章详情页（通常是 /年/月/日/文章名/ 格式）
-    const pathParts = currentPath.split('/').filter(p => p);
-    if (pathParts.length >= 4 && /^\d&#123;4&#125;$/.test(pathParts[0]) && /^\d&#123;2&#125;$/.test(pathParts[1])) &#123;
-      // 计算需要返回多少级目录才能到 source 目录
-      const levelsUp = pathParts.length;
-      return '../'.repeat(levelsUp) + relativePath;
-    &#125;
-    
-    // 主页或其他页面，使用相对路径
-    return relativePath;
-  &#125;
-  
-  // 创建播放器容器
-  const container = document.createElement('div');
-  container.className = 'music-player-container';
-  container.innerHTML = `
-    <!-- 圆形音乐封面 -->
-    <div class="music-avatar" id="music-avatar">
-      <img src="$&#123;getCorrectPath('music-cover/Undying Macula.jpg')&#125;" alt="专辑封面" class="music-avatar-img" id="avatar-img" onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\"><rect width=\"24\" height=\"24\" fill=\"%23667eea\"/><text x=\"12\" y=\"16\" font-family=\"Arial\" font-size=\"12\" fill=\"white\" text-anchor=\"middle\">Music</text></svg>'">
-      <div class="play-overlay">
-        <button class="play-btn" id="avatar-play-btn" title="播放/暂停">
-          <i class="fa fa-play" id="avatar-play-icon"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- 音乐控制面板 -->
-    <div class="music-panel" id="music-panel">
-      <!-- 播放列表 -->
-      <div class="playlist-section">
-        <div class="playlist-header">
-          <div class="playlist-title">播放列表</div>
-        </div>
-        <div class="playlist-items" id="playlist">
-          <!-- 播放列表项将通过JavaScript动态生成 -->
-        </div>
-      </div>
-
-      <!-- 控制栏 -->
-      <div class="controls-section">
-        <!-- 当前播放信息 -->
-        <div class="current-track">
-          <div class="track-name" id="current-track-name">Undying Macula</div>
-          <div class="track-artist" id="current-track-artist">Ashrount</div>
-        </div>
-
-        <!-- 进度条 -->
-        <div class="progress-container">
-          <div class="progress-bar" id="progress-bar">
-            <div class="progress" id="progress"></div>
-          </div>
-          <div class="time-info">
-            <span id="current-time">00:00</span>
-            <span id="total-time">02:43</span>
-          </div>
-        </div>
-
-        <!-- 控制按钮 -->
-        <div class="controls-group">
-          <button class="control-btn" id="mode-btn" title="播放模式">
-            <i class="fa fa-random" id="mode-icon"></i>
-          </button>
-          <button class="control-btn" id="prev-btn" title="上一首">
-            <i class="fa fa-step-backward"></i>
-          </button>
-          <button class="control-btn main" id="main-play-btn" title="播放/暂停">
-            <i class="fa fa-play" id="main-play-icon"></i>
-          </button>
-          <button class="control-btn" id="next-btn" title="下一首">
-            <i class="fa fa-step-forward"></i>
-          </button>
-          <div class="play-mode-indicator" id="play-mode-indicator"></div>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  // 插入到body末尾
-  document.body.appendChild(container);
-  
-  // 初始化播放器
-  initMusicPlayer();
-&#125;);
-
-// 全局变量
-let ap = null;
-let isPlaying = false;
-let currentVolume = 0.7;
-let playMode = 'list'; // 只有 'list' 和 'random' 两种模式
-let panelTimeout = null;
-let isPanelVisible = false;
-let isSeeking = false;
-let isDraggingProgress = false;
-let lastRandomIndex = -1;
-let currentTrackIndex = 0;
-
-// 自动计算当前页面的基础路径
-function getBasePath() &#123;
-  const currentPath = window.location.pathname;
-  const currentUrl = window.location.href;
-  
-  // 如果当前页面是 _posts 目录下的文章页面
-  if (currentPath.includes('/_posts/') || currentPath.includes('/categories/') || 
-      currentPath.includes('/tags/') || currentPath.includes('/about/')) &#123;
-    // 这些页面在 source 目录下，需要返回上级目录
-    return '../';
-  &#125;
-  
-  // 如果是文章详情页（Hexo格式：/年/月/日/文章名/）
-  const pathParts = currentPath.split('/').filter(p => p);
-  if (pathParts.length >= 4 && /^\d&#123;4&#125;$/.test(pathParts[0]) && /^\d&#123;2&#125;$/.test(pathParts[1])) &#123;
-    // 计算需要返回多少级目录才能到根目录
-    const levelsUp = pathParts.length;
-    return '../'.repeat(levelsUp);
-  &#125;
-  
-  // 主页或其他页面，使用相对路径
-  return './';
-&#125;
-
-// 音乐列表 - 使用动态路径
-const musicList = [
-  &#123;
-    name: 'Undying Macula',
-    artist: 'Ashrount',
-    url: 'music/Undying Macula.mp3',
-    cover: 'music-cover/Undying Macula.jpg',
-    duration: '02:43',
-  &#125;,
-  &#123;
-    name: 'AFTER PANDORA',
-    artist: '削除',
-    url: 'music/AFTER PANDORA.mp3',
-    cover: 'music-cover/AFTER PANDORA.png',
-    duration: '04:06',
-  &#125;,
-  &#123;
-    name: 'Androgynos (Full Phase)',
-    artist: 'BlackY',
-    url: 'music/Androgynos (Full Phase).mp3',
-    cover: 'music-cover/Androgynos (Full Phase).jpg',
-    duration: '04:56',
-  &#125;,
-  &#123;
-    name: 'Immutable',
-    artist: 'Juggernaut.',
-    url: 'music/Immutable.mp3',
-    cover: 'music-cover/Immutable.png',
-    duration: '05:25',
-  &#125;,
-];
-
-function initMusicPlayer() &#123;
-  // 创建隐藏的 APlayer 容器
-  const playerContainer = document.createElement('div');
-  playerContainer.id = 'aplayer-hidden-container';
-  playerContainer.style.display = 'none';
-  document.body.appendChild(playerContainer);
-  
-  // 获取基础路径
-  const basePath = getBasePath();
-  
-  // 修正音乐文件路径
-  const correctedMusicList = musicList.map(track => &#123;
-    return &#123;
-      ...track,
-      url: basePath + track.url,
-      cover: basePath + track.cover
-    &#125;;
-  &#125;);
-  
-  // 简化：始终使用列表循环
-  ap = new APlayer(&#123;
-    container: document.getElementById('aplayer-hidden-container'),
-    audio: correctedMusicList,
-    theme: '#667eea',
-    loop: 'all', // 始终使用全部循环
-    order: 'list',
-    preload: 'auto',
-    volume: currentVolume,
-    mutex: true,
-    lrcType: 0,
-    fixed: false,
-    mini: false,
-    autoplay: false,
-    controls: false
-  &#125;);
-  
-  // 事件监听
-  ap.on('play', () => &#123;
-    isPlaying = true;
-    updatePlayButton();
-    updateAvatarPlayButton();
-  &#125;);
-
-  ap.on('pause', () => &#123;
-    isPlaying = false;
-    updatePlayButton();
-    updateAvatarPlayButton();
-  &#125;);
-
-  ap.on('canplay', () => &#123;
-    updateTrackInfo();
-  &#125;);
-  
-  // 监听 timeupdate 更新进度
-  ap.on('timeupdate', () => &#123;
-    if (!isSeeking && !isDraggingProgress) &#123;
-      updateProgress();
-    &#125;
-  &#125;);
-  
-  ap.on('loadedmetadata', () => &#123;
-    updateProgress();
-    const totalTime = document.getElementById('total-time');
-    if (ap.audio.duration && !isNaN(ap.audio.duration)) &#123;
-      totalTime.textContent = formatTime(ap.audio.duration);
-    &#125;
-  &#125;);
-  
-  // 监听歌曲切换
-  ap.on('listswitch', (index) => &#123;
-    currentTrackIndex = index.item;
-    updateTrackInfo();
-    updateActivePlaylistItem(index.item);
-  &#125;);
-  
-  // 初始化 UI
-  renderPlaylist();
-  setupEventListeners();
-  positionPanel();
-  updatePlayModeUI();
-  hidePanel();
-&#125;
-
-function setupEventListeners() &#123;
-  const avatar = document.getElementById('music-avatar');
-  const panel = document.getElementById('music-panel');
-  const progressBar = document.getElementById('progress-bar');
-  const playlistItems = document.getElementById('playlist');
-  const avatarBtn = document.getElementById('avatar-play-btn');
-  const modeBtn = document.getElementById('mode-btn');
-  const prevBtn = document.getElementById('prev-btn');
-  const mainBtn = document.getElementById('main-play-btn');
-  const nextBtn = document.getElementById('next-btn');
-
-  if (!avatar || !panel || !progressBar) &#123;
-    console.error('播放器元素未找到');
-    return;
-  &#125;
-
-  // 滚动传递问题
-  playlistItems.addEventListener('wheel', function(e) &#123;
-    const isAtBottom = this.scrollHeight - this.scrollTop <= this.clientHeight + 1;
-    const isAtTop = this.scrollTop === 0;
-    
-    if (isAtBottom && e.deltaY > 0) &#123;
-      e.stopPropagation();
-      e.preventDefault();
-      return false;
-    &#125;
-    
-    if (isAtTop && e.deltaY < 0) &#123;
-      e.stopPropagation();
-      e.preventDefault();
-      return false;
-    &#125;
-    
-    e.stopPropagation();
-  &#125;, &#123; passive: false &#125;);
-
-  // 封面鼠标事件
-  avatar.addEventListener('mouseenter', function(e) &#123;
-    e.stopPropagation();
-    showPanel();
-  &#125;);
-
-  avatar.addEventListener('mouseleave', function(e) &#123;
-    e.stopPropagation();
-    if (!isPanelVisible) &#123;
-      hidePanel();
-    &#125;
-  &#125;);
-
-  // 进度条事件处理
-  progressBar.addEventListener('mousedown', function(e) &#123;
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!ap.audio || !ap.audio.duration) return;
-    
-    isDraggingProgress = true;
-    progressBar.classList.add('dragging');
-    isSeeking = true;
-    
-    const rect = progressBar.getBoundingClientRect();
-    const x = e.clientX;
-    const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
-    
-    updateProgressDisplay(percent);
-    
-    document.addEventListener('mousemove', handleProgressDragMove);
-    document.addEventListener('mouseup', handleProgressDragEnd);
-  &#125;);
-
-  progressBar.addEventListener('click', function(e) &#123;
-    e.stopPropagation();
-    
-    if (!ap.audio || !ap.audio.duration) return;
-    
-    const rect = progressBar.getBoundingClientRect();
-    const x = e.clientX;
-    const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
-    const targetTime = percent * ap.audio.duration;
-    
-    isSeeking = true;
-    ap.seek(targetTime);
-    updateProgressDisplay(percent);
-    
-    if (isPlaying) &#123;
-      setTimeout(() => &#123;
-        ap.play();
-      &#125;, 10);
-    &#125;
-    
-    setTimeout(() => &#123;
-      isSeeking = false;
-    &#125;, 100);
-  &#125;);
-
-  // 按钮事件
-  avatarBtn.addEventListener('click', function(e) &#123;
-    e.stopPropagation();
-    togglePlayPause();
-  &#125;);
-
-  modeBtn.addEventListener('click', function(e) &#123;
-    e.stopPropagation();
-    changePlayMode();
-  &#125;);
-
-  prevBtn.addEventListener('click', function(e) &#123;
-    e.stopPropagation();
-    previousTrack();
-  &#125;);
-
-  mainBtn.addEventListener('click', function(e) &#123;
-    e.stopPropagation();
-    togglePlayPause();
-  &#125;);
-
-  nextBtn.addEventListener('click', function(e) &#123;
-    e.stopPropagation();
-    nextTrack();
-  &#125;);
-
-  // 面板鼠标事件
-  panel.addEventListener('mouseenter', function(e) &#123;
-    e.stopPropagation();
-    isPanelVisible = true;
-    if (panelTimeout) &#123;
-      clearTimeout(panelTimeout);
-    &#125;
-  &#125;);
-
-  panel.addEventListener('mouseleave', function(e) &#123;
-    e.stopPropagation();
-    isPanelVisible = false;
-    panelTimeout = setTimeout(hidePanel, 300);
-  &#125;);
-
-  window.addEventListener('scroll', positionPanel);
-  window.addEventListener('resize', positionPanel);
-  
-  document.addEventListener('click', function(e) &#123;
-    const avatar = document.getElementById('music-avatar');
-    const panel = document.getElementById('music-panel');
-    if (!avatar.contains(e.target) && !panel.contains(e.target)) &#123;
-      hidePanel();
-    &#125;
-  &#125;);
-&#125;
-
-// 进度条拖拽移动
-function handleProgressDragMove(e) &#123;
-  if (!isDraggingProgress || !ap.audio || !ap.audio.duration) return;
-  
-  e.preventDefault();
-  e.stopPropagation();
-  
-  const progressBar = document.getElementById('progress-bar');
-  const rect = progressBar.getBoundingClientRect();
-  const x = e.clientX;
-  const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
-  
-  updateProgressDisplay(percent);
-&#125;
-
-// 进度条拖拽结束
-function handleProgressDragEnd(e) &#123;
-  if (!isDraggingProgress || !ap.audio || !ap.audio.duration) return;
-  
-  e.preventDefault();
-  e.stopPropagation();
-  
-  isDraggingProgress = false;
-  const progressBar = document.getElementById('progress-bar');
-  progressBar.classList.remove('dragging');
-  
-  const rect = progressBar.getBoundingClientRect();
-  const x = e.clientX;
-  const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
-  const targetTime = percent * ap.audio.duration;
-  
-  ap.seek(targetTime);
-  
-  if (isPlaying) &#123;
-    ap.pause();
-    setTimeout(() => &#123;
-      ap.play();
-    &#125;, 10);
-  &#125;
-  
-  updateProgressDisplay(percent);
-  
-  document.removeEventListener('mousemove', handleProgressDragMove);
-  document.removeEventListener('mouseup', handleProgressDragEnd);
-  
-  setTimeout(() => &#123;
-    isSeeking = false;
-  &#125;, 100);
-&#125;
-
-function updateProgressDisplay(percent) &#123;
-  const progress = document.getElementById('progress');
-  const currentTimeEl = document.getElementById('current-time');
-  
-  if (progress) &#123;
-    progress.style.width = `$&#123;percent * 100&#125;%`;
-  &#125;
-  
-  if (currentTimeEl && ap.audio && ap.audio.duration) &#123;
-    const targetTime = percent * ap.audio.duration;
-    currentTimeEl.textContent = formatTime(targetTime);
-  &#125;
-&#125;
-
-function updateProgress() &#123;
-  if (!ap.audio || !ap.audio.duration || isNaN(ap.audio.duration) || isSeeking || isDraggingProgress) &#123;
-    return;
-  &#125;
-  
-  const currentTime = ap.audio.currentTime || 0;
-  const duration = ap.audio.duration || 0;
-  const percent = duration > 0 ? (currentTime / duration) * 100 : 0;
-  
-  const progress = document.getElementById('progress');
-  if (progress) &#123;
-    progress.style.width = `$&#123;percent&#125;%`;
-  &#125;
-  
-  const currentTimeEl = document.getElementById('current-time');
-  if (currentTimeEl) currentTimeEl.textContent = formatTime(currentTime);
-&#125;
-
-function showPanel() &#123;
-  const panel = document.getElementById('music-panel');
-  if (panel) &#123;
-    panel.classList.add('show');
-    positionPanel();
-    isPanelVisible = true;
-    
-    if (panelTimeout) &#123;
-      clearTimeout(panelTimeout);
-    &#125;
-  &#125;
-&#125;
-
-function hidePanel() &#123;
-  const panel = document.getElementById('music-panel');
-  if (panel) &#123;
-    panel.classList.remove('show');
-    isPanelVisible = false;
-  &#125;
-&#125;
-
-function positionPanel() &#123;
-  const avatar = document.getElementById('music-avatar');
-  const panel = document.getElementById('music-panel');
-  if (!avatar || !panel) return;
-  
-  const avatarRect = avatar.getBoundingClientRect();
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
-  const panelWidth = 280;
-  const panelHeight = 320;
-  
-  let left = avatarRect.right + 10;
-  let top = avatarRect.top;
-  
-  if (left + panelWidth > viewportWidth - 20) &#123;
-    left = avatarRect.left - panelWidth - 10;
-  &#125;
-  
-  if (left < 20) &#123;
-    left = 20;
-  &#125;
-  
-  if (top + panelHeight > viewportHeight - 20) &#123;
-    top = viewportHeight - panelHeight - 20;
-  &#125;
-  
-  if (top < 20) &#123;
-    top = 20;
-  &#125;
-  
-  panel.style.left = left + 'px';
-  panel.style.top = top + 'px';
-&#125;
-
-function renderPlaylist() &#123;
-  const playlistEl = document.getElementById('playlist');
-  if (!playlistEl) return;
-  
-  playlistEl.innerHTML = '';
-  
-  const basePath = getBasePath();
-  const correctedMusicList = musicList.map(track => (&#123;
-    ...track,
-    url: basePath + track.url,
-    cover: basePath + track.cover
-  &#125;));
-  
-  correctedMusicList.forEach((track, index) => &#123;
-    const item = document.createElement('div');
-    item.className = 'playlist-item';
-    if (index === 0) item.classList.add('active');
-    item.innerHTML = `
-      <div class="playlist-num">$&#123;index + 1&#125;</div>
-      <div class="playlist-info">
-        <div class="playlist-track">$&#123;track.name&#125;</div>
-        <div class="playlist-artist">$&#123;track.artist&#125;</div>
-      </div>
-      <div class="playlist-duration">$&#123;track.duration&#125;</div>
-    `;
-    item.addEventListener('click', (e) => &#123;
-      e.stopPropagation();
-      playTrack(index);
-    &#125;);
-    playlistEl.appendChild(item);
-  &#125;);
-&#125;
-
-function playTrack(index) &#123;
-  currentTrackIndex = index;
-  
-  if (playMode === 'random') &#123;
-    lastRandomIndex = index;
-  &#125;
-  
-  ap.list.switch(index);
-  ap.play();
-  updateActivePlaylistItem(index);
-  updateTrackInfo();
-  showPanel();
-&#125;
-
-function updateActivePlaylistItem(index) &#123;
-  document.querySelectorAll('.playlist-item').forEach((item, i) => &#123;
-    item.classList.toggle('active', i === index);
-  &#125;);
-&#125;
-
-function togglePlayPause() &#123;
-  if (isPlaying) &#123;
-    ap.pause();
-  &#125; else &#123;
-    ap.play();
-  &#125;
-  showPanel();
-&#125;
-
-function updatePlayButton() &#123;
-  const mainIcon = document.getElementById('main-play-icon');
-  const mainBtn = document.getElementById('main-play-btn');
-  if (isPlaying) &#123;
-    if (mainIcon) mainIcon.className = 'fa fa-pause';
-    if (mainBtn) mainBtn.title = '暂停';
-  &#125; else &#123;
-    if (mainIcon) mainIcon.className = 'fa fa-play';
-    if (mainBtn) mainBtn.title = '播放';
-  &#125;
-&#125;
-
-function updateAvatarPlayButton() &#123;
-  const avatarIcon = document.getElementById('avatar-play-icon');
-  const avatarBtn = document.getElementById('avatar-play-btn');
-  if (isPlaying) &#123;
-    if (avatarIcon) avatarIcon.className = 'fa fa-pause';
-    if (avatarBtn) avatarBtn.title = '暂停';
-  &#125; else &#123;
-    if (avatarIcon) avatarIcon.className = 'fa fa-play';
-    if (avatarBtn) avatarBtn.title = '播放';
-  &#125;
-&#125;
-
-function previousTrack() &#123;
-  if (playMode === 'random') &#123;
-    let randomIndex;
-    do &#123;
-      randomIndex = Math.floor(Math.random() * musicList.length);
-    &#125; while (musicList.length > 1 && randomIndex === lastRandomIndex);
-    
-    lastRandomIndex = randomIndex;
-    playTrack(randomIndex);
-  &#125; else &#123;
-    ap.skipBack();
-    if (!isPlaying) ap.play();
-  &#125;
-  updateTrackInfo();
-  showPanel();
-&#125;
-
-function nextTrack() &#123;
-  if (playMode === 'random') &#123;
-    let randomIndex;
-    do &#123;
-      randomIndex = Math.floor(Math.random() * musicList.length);
-    &#125; while (musicList.length > 1 && randomIndex === lastRandomIndex);
-    
-    lastRandomIndex = randomIndex;
-    playTrack(randomIndex);
-  &#125; else &#123;
-    ap.skipForward();
-    if (!isPlaying) ap.play();
-  &#125;
-  updateTrackInfo();
-  showPanel();
-&#125;
-
-function changePlayMode() &#123;
-  // 只有两种模式：列表循环和随机播放
-  const modes = [
-    &#123; id: 'list', name: '列表循环', icon: 'fa-list-ol' &#125;,
-    &#123; id: 'random', name: '随机播放', icon: 'fa-random' &#125;
-  ];
-  
-  const currentIndex = modes.findIndex(mode => mode.id === playMode);
-  const nextIndex = (currentIndex + 1) % modes.length;
-  playMode = modes[nextIndex].id;
-  
-  if (playMode === 'random') &#123;
-    // 初始化随机播放
-    lastRandomIndex = -1;
-  &#125;
-  
-  updatePlayModeUI();
-  showPanel();
-&#125;
-
-function updatePlayModeUI() &#123;
-  const modeBtn = document.getElementById('mode-btn');
-  const modeIcon = document.getElementById('mode-icon');
-  const indicator = document.getElementById('play-mode-indicator');
-  
-  let title = '', icon = '', indicatorClass = '';
-  
-  if (playMode === 'list') &#123;
-    title = '列表循环';
-    icon = 'fa-list-ol';
-    indicatorClass = 'list';
-  &#125; else if (playMode === 'random') &#123;
-    title = '随机播放';
-    icon = 'fa-random';
-    indicatorClass = 'random';
-  &#125;
-  
-  if (modeBtn) modeBtn.title = title;
-  if (modeIcon) modeIcon.className = 'fa ' + icon;
-  if (indicator) indicator.className = 'play-mode-indicator ' + indicatorClass;
-&#125;
-
-function updateTrackInfo() &#123;
-  const basePath = getBasePath();
-  const correctedMusicList = musicList.map(track => (&#123;
-    ...track,
-    url: basePath + track.url,
-    cover: basePath + track.cover
-  &#125;));
-  
-  const current = correctedMusicList[ap.list.index];
-  if (!current) return;
-  
-  const trackName = document.getElementById('current-track-name');
-  const trackArtist = document.getElementById('current-track-artist');
-  const avatarImg = document.getElementById('avatar-img');
-  const totalTime = document.getElementById('total-time');
-  
-  if (trackName) trackName.textContent = current.name;
-  if (trackArtist) trackArtist.textContent = current.artist;
-  if (avatarImg) &#123;
-    avatarImg.src = current.cover;
-  &#125;
-  if (totalTime) totalTime.textContent = current.duration;
-  
-  updateActivePlaylistItem(ap.list.index);
-&#125;
-
-function formatTime(seconds) &#123;
-  if (isNaN(seconds) || seconds === 0) return '00:00';
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `$&#123;mins.toString().padStart(2, '0')&#125;:$&#123;secs.toString().padStart(2, '0')&#125;`;
-&#125;
-</script>
-
-<!-- 引入 APlayer -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
-<script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script></code></pre>
+<div class="shiki" data-theme="github-light"><pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>&#x3C;style></span></span>
+<span class="line"><span>/* 音乐播放器容器 - 固定在右下角 */</span></span>
+<span class="line"><span>.music-player-container &#123;</span></span>
+<span class="line"><span>  position: fixed;</span></span>
+<span class="line"><span>  bottom: 100px;</span></span>
+<span class="line"><span>  right: 30px;</span></span>
+<span class="line"><span>  z-index: 9999;</span></span>
+<span class="line"><span>  width: 80px;</span></span>
+<span class="line"><span>  height: 80px;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/* 圆形音乐封面 */</span></span>
+<span class="line"><span>.music-avatar &#123;</span></span>
+<span class="line"><span>  width: 80px;</span></span>
+<span class="line"><span>  height: 80px;</span></span>
+<span class="line"><span>  border-radius: 50%;</span></span>
+<span class="line"><span>  overflow: hidden;</span></span>
+<span class="line"><span>  position: relative;</span></span>
+<span class="line"><span>  cursor: pointer;</span></span>
+<span class="line"><span>  transition: all 0.3s ease;</span></span>
+<span class="line"><span>  box-shadow: 0 4px 12px rgba(0,0,0,0.15);</span></span>
+<span class="line"><span>  z-index: 10000;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.music-avatar:hover &#123;</span></span>
+<span class="line"><span>  transform: scale(1.05);</span></span>
+<span class="line"><span>  box-shadow: 0 6px 20px rgba(0,0,0,0.2);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.music-avatar-img &#123;</span></span>
+<span class="line"><span>  width: 100%;</span></span>
+<span class="line"><span>  height: 100%;</span></span>
+<span class="line"><span>  object-fit: cover;</span></span>
+<span class="line"><span>  filter: brightness(0.7);</span></span>
+<span class="line"><span>  transition: filter 0.3s ease;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.music-avatar:hover .music-avatar-img &#123;</span></span>
+<span class="line"><span>  filter: brightness(1);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/* 播放按钮覆盖层 */</span></span>
+<span class="line"><span>.play-overlay &#123;</span></span>
+<span class="line"><span>  position: absolute;</span></span>
+<span class="line"><span>  top: 0;</span></span>
+<span class="line"><span>  left: 0;</span></span>
+<span class="line"><span>  width: 100%;</span></span>
+<span class="line"><span>  height: 100%;</span></span>
+<span class="line"><span>  display: flex;</span></span>
+<span class="line"><span>  align-items: center;</span></span>
+<span class="line"><span>  justify-content: center;</span></span>
+<span class="line"><span>  background: rgba(0,0,0,0.3);</span></span>
+<span class="line"><span>  border-radius: 50%;</span></span>
+<span class="line"><span>  opacity: 1;</span></span>
+<span class="line"><span>  transition: opacity 0.3s ease, background 0.3s ease;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.music-avatar:hover .play-overlay &#123;</span></span>
+<span class="line"><span>  background: rgba(0,0,0,0.2);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.play-btn &#123;</span></span>
+<span class="line"><span>  background: rgba(255,255,255,0.9);</span></span>
+<span class="line"><span>  width: 40px;</span></span>
+<span class="line"><span>  height: 40px;</span></span>
+<span class="line"><span>  border-radius: 50%;</span></span>
+<span class="line"><span>  display: flex;</span></span>
+<span class="line"><span>  align-items: center;</span></span>
+<span class="line"><span>  justify-content: center;</span></span>
+<span class="line"><span>  color: #667eea;</span></span>
+<span class="line"><span>  font-size: 18px;</span></span>
+<span class="line"><span>  transition: all 0.3s ease;</span></span>
+<span class="line"><span>  border: none;</span></span>
+<span class="line"><span>  cursor: pointer;</span></span>
+<span class="line"><span>  box-shadow: 0 2px 8px rgba(0,0,0,0.2);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.play-btn:hover &#123;</span></span>
+<span class="line"><span>  background: white;</span></span>
+<span class="line"><span>  transform: scale(1.1);</span></span>
+<span class="line"><span>  box-shadow: 0 4px 12px rgba(0,0,0,0.3);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/* 音乐控制面板 */</span></span>
+<span class="line"><span>.music-panel &#123;</span></span>
+<span class="line"><span>  position: fixed;</span></span>
+<span class="line"><span>  width: 280px;</span></span>
+<span class="line"><span>  background: white;</span></span>
+<span class="line"><span>  border-radius: 12px;</span></span>
+<span class="line"><span>  box-shadow: 0 8px 30px rgba(0,0,0,0.15);</span></span>
+<span class="line"><span>  opacity: 0;</span></span>
+<span class="line"><span>  visibility: hidden;</span></span>
+<span class="line"><span>  transform: translateY(-20px);</span></span>
+<span class="line"><span>  transition: all 0.3s ease;</span></span>
+<span class="line"><span>  z-index: 9998;</span></span>
+<span class="line"><span>  overflow: hidden;</span></span>
+<span class="line"><span>  pointer-events: none;</span></span>
+<span class="line"><span>  max-height: 350px;</span></span>
+<span class="line"><span>  display: flex;</span></span>
+<span class="line"><span>  flex-direction: column;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.music-panel.show &#123;</span></span>
+<span class="line"><span>  opacity: 1;</span></span>
+<span class="line"><span>  visibility: visible;</span></span>
+<span class="line"><span>  transform: translateY(0);</span></span>
+<span class="line"><span>  pointer-events: auto;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/* 播放列表 */</span></span>
+<span class="line"><span>.playlist-section &#123;</span></span>
+<span class="line"><span>  flex: 1;</span></span>
+<span class="line"><span>  display: flex;</span></span>
+<span class="line"><span>  flex-direction: column;</span></span>
+<span class="line"><span>  overflow: hidden;</span></span>
+<span class="line"><span>  border-bottom: 1px solid #f0f0f0;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-header &#123;</span></span>
+<span class="line"><span>  padding: 12px 15px 8px 15px;</span></span>
+<span class="line"><span>  background: white;</span></span>
+<span class="line"><span>  border-bottom: 1px solid #f0f0f0;</span></span>
+<span class="line"><span>  position: sticky;</span></span>
+<span class="line"><span>  top: 0;</span></span>
+<span class="line"><span>  z-index: 2;</span></span>
+<span class="line"><span>  flex-shrink: 0;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-title &#123;</span></span>
+<span class="line"><span>  font-size: 12px;</span></span>
+<span class="line"><span>  color: #999;</span></span>
+<span class="line"><span>  text-transform: uppercase;</span></span>
+<span class="line"><span>  letter-spacing: 1px;</span></span>
+<span class="line"><span>  font-weight: 500;</span></span>
+<span class="line"><span>  margin: 0;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-items &#123;</span></span>
+<span class="line"><span>  flex: 1;</span></span>
+<span class="line"><span>  overflow-y: auto;</span></span>
+<span class="line"><span>  padding: 0 10px 10px 10px;</span></span>
+<span class="line"><span>  max-height: 180px;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-items &#123;</span></span>
+<span class="line"><span>  overscroll-behavior: contain;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-items::-webkit-scrollbar &#123;</span></span>
+<span class="line"><span>  width: 6px;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-items::-webkit-scrollbar-track &#123;</span></span>
+<span class="line"><span>  background: #f5f5f5;</span></span>
+<span class="line"><span>  border-radius: 3px;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-items::-webkit-scrollbar-thumb &#123;</span></span>
+<span class="line"><span>  background: #ccc;</span></span>
+<span class="line"><span>  border-radius: 3px;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-items::-webkit-scrollbar-thumb:hover &#123;</span></span>
+<span class="line"><span>  background: #999;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-item &#123;</span></span>
+<span class="line"><span>  display: flex;</span></span>
+<span class="line"><span>  align-items: center;</span></span>
+<span class="line"><span>  padding: 6px 8px;</span></span>
+<span class="line"><span>  border-radius: 6px;</span></span>
+<span class="line"><span>  cursor: pointer;</span></span>
+<span class="line"><span>  transition: all 0.2s ease;</span></span>
+<span class="line"><span>  margin-bottom: 2px;</span></span>
+<span class="line"><span>  min-height: 36px;</span></span>
+<span class="line"><span>  user-select: none;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-item:hover &#123;</span></span>
+<span class="line"><span>  background: #f8f9fa;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-item.active &#123;</span></span>
+<span class="line"><span>  background: #e6f7ff;</span></span>
+<span class="line"><span>  color: #1890ff;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-num &#123;</span></span>
+<span class="line"><span>  width: 18px;</span></span>
+<span class="line"><span>  height: 18px;</span></span>
+<span class="line"><span>  background: #f5f5f5;</span></span>
+<span class="line"><span>  color: #666;</span></span>
+<span class="line"><span>  border-radius: 4px;</span></span>
+<span class="line"><span>  display: flex;</span></span>
+<span class="line"><span>  align-items: center;</span></span>
+<span class="line"><span>  justify-content: center;</span></span>
+<span class="line"><span>  font-size: 10px;</span></span>
+<span class="line"><span>  font-weight: 500;</span></span>
+<span class="line"><span>  margin-right: 8px;</span></span>
+<span class="line"><span>  flex-shrink: 0;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-item.active .playlist-num &#123;</span></span>
+<span class="line"><span>  background: #1890ff;</span></span>
+<span class="line"><span>  color: white;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-info &#123;</span></span>
+<span class="line"><span>  flex: 1;</span></span>
+<span class="line"><span>  min-width: 0;</span></span>
+<span class="line"><span>  margin-right: 5px;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-track &#123;</span></span>
+<span class="line"><span>  font-size: 12px;</span></span>
+<span class="line"><span>  font-weight: 500;</span></span>
+<span class="line"><span>  color: #333;</span></span>
+<span class="line"><span>  white-space: nowrap;</span></span>
+<span class="line"><span>  overflow: hidden;</span></span>
+<span class="line"><span>  text-overflow: ellipsis;</span></span>
+<span class="line"><span>  line-height: 1.2;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-artist &#123;</span></span>
+<span class="line"><span>  font-size: 10px;</span></span>
+<span class="line"><span>  color: #999;</span></span>
+<span class="line"><span>  margin-top: 1px;</span></span>
+<span class="line"><span>  line-height: 1.2;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.playlist-duration &#123;</span></span>
+<span class="line"><span>  font-size: 10px;</span></span>
+<span class="line"><span>  color: #999;</span></span>
+<span class="line"><span>  flex-shrink: 0;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/* 控制栏 */</span></span>
+<span class="line"><span>.controls-section &#123;</span></span>
+<span class="line"><span>  padding: 12px 15px;</span></span>
+<span class="line"><span>  background: #fafafa;</span></span>
+<span class="line"><span>  flex-shrink: 0;</span></span>
+<span class="line"><span>  border-top: 1px solid #eee;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/* 当前播放信息 */</span></span>
+<span class="line"><span>.current-track &#123;</span></span>
+<span class="line"><span>  margin-bottom: 10px;</span></span>
+<span class="line"><span>  text-align: center;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.track-name &#123;</span></span>
+<span class="line"><span>  font-size: 13px;</span></span>
+<span class="line"><span>  font-weight: 500;</span></span>
+<span class="line"><span>  color: #333;</span></span>
+<span class="line"><span>  margin-bottom: 2px;</span></span>
+<span class="line"><span>  white-space: nowrap;</span></span>
+<span class="line"><span>  overflow: hidden;</span></span>
+<span class="line"><span>  text-overflow: ellipsis;</span></span>
+<span class="line"><span>  line-height: 1.2;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.track-artist &#123;</span></span>
+<span class="line"><span>  font-size: 11px;</span></span>
+<span class="line"><span>  color: #666;</span></span>
+<span class="line"><span>  line-height: 1.2;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/* 控制按钮组 */</span></span>
+<span class="line"><span>.controls-group &#123;</span></span>
+<span class="line"><span>  display: flex;</span></span>
+<span class="line"><span>  justify-content: center;</span></span>
+<span class="line"><span>  align-items: center;</span></span>
+<span class="line"><span>  gap: 6px;</span></span>
+<span class="line"><span>  margin-top: 8px;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.control-btn &#123;</span></span>
+<span class="line"><span>  width: 30px;</span></span>
+<span class="line"><span>  height: 30px;</span></span>
+<span class="line"><span>  border-radius: 50%;</span></span>
+<span class="line"><span>  border: none;</span></span>
+<span class="line"><span>  background: white;</span></span>
+<span class="line"><span>  color: #666;</span></span>
+<span class="line"><span>  cursor: pointer;</span></span>
+<span class="line"><span>  display: flex;</span></span>
+<span class="line"><span>  align-items: center;</span></span>
+<span class="line"><span>  justify-content: center;</span></span>
+<span class="line"><span>  transition: all 0.2s ease;</span></span>
+<span class="line"><span>  font-size: 12px;</span></span>
+<span class="line"><span>  box-shadow: 0 1px 3px rgba(0,0,0,0.1);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.control-btn:hover &#123;</span></span>
+<span class="line"><span>  background: #667eea;</span></span>
+<span class="line"><span>  color: white;</span></span>
+<span class="line"><span>  transform: translateY(-1px);</span></span>
+<span class="line"><span>  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.4);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.control-btn.main &#123;</span></span>
+<span class="line"><span>  width: 36px;</span></span>
+<span class="line"><span>  height: 36px;</span></span>
+<span class="line"><span>  font-size: 14px;</span></span>
+<span class="line"><span>  background: linear-gradient(135deg, #667eea, #764ba2);</span></span>
+<span class="line"><span>  color: white;</span></span>
+<span class="line"><span>  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.control-btn.main:hover &#123;</span></span>
+<span class="line"><span>  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/* 进度条 */</span></span>
+<span class="line"><span>.progress-container &#123;</span></span>
+<span class="line"><span>  margin-top: 8px;</span></span>
+<span class="line"><span>  position: relative;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.progress-bar &#123;</span></span>
+<span class="line"><span>  height: 4px;</span></span>
+<span class="line"><span>  background: #e8e8e8;</span></span>
+<span class="line"><span>  border-radius: 2px;</span></span>
+<span class="line"><span>  cursor: pointer;</span></span>
+<span class="line"><span>  position: relative;</span></span>
+<span class="line"><span>  user-select: none;</span></span>
+<span class="line"><span>  touch-action: none;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.progress &#123;</span></span>
+<span class="line"><span>  height: 100%;</span></span>
+<span class="line"><span>  background: linear-gradient(90deg, #667eea, #764ba2);</span></span>
+<span class="line"><span>  width: 0%;</span></span>
+<span class="line"><span>  border-radius: 2px;</span></span>
+<span class="line"><span>  position: relative;</span></span>
+<span class="line"><span>  transition: width 0.1s linear;</span></span>
+<span class="line"><span>  pointer-events: none;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/* 进度条拖拽点 */</span></span>
+<span class="line"><span>.progress::after &#123;</span></span>
+<span class="line"><span>  content: '';</span></span>
+<span class="line"><span>  position: absolute;</span></span>
+<span class="line"><span>  right: -5px;</span></span>
+<span class="line"><span>  top: 50%;</span></span>
+<span class="line"><span>  transform: translateY(-50%);</span></span>
+<span class="line"><span>  width: 10px;</span></span>
+<span class="line"><span>  height: 10px;</span></span>
+<span class="line"><span>  background: white;</span></span>
+<span class="line"><span>  border: 2px solid #667eea;</span></span>
+<span class="line"><span>  border-radius: 50%;</span></span>
+<span class="line"><span>  opacity: 0;</span></span>
+<span class="line"><span>  transition: opacity 0.2s, transform 0.2s;</span></span>
+<span class="line"><span>  box-shadow: 0 1px 3px rgba(0,0,0,0.2);</span></span>
+<span class="line"><span>  pointer-events: none;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.progress-bar:hover .progress::after,</span></span>
+<span class="line"><span>.progress-bar.dragging .progress::after &#123;</span></span>
+<span class="line"><span>  opacity: 1;</span></span>
+<span class="line"><span>  transform: translateY(-50%) scale(1);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.time-info &#123;</span></span>
+<span class="line"><span>  display: flex;</span></span>
+<span class="line"><span>  justify-content: space-between;</span></span>
+<span class="line"><span>  font-size: 9px;</span></span>
+<span class="line"><span>  color: #999;</span></span>
+<span class="line"><span>  margin-top: 4px;</span></span>
+<span class="line"><span>  user-select: none;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/* 播放模式指示器 */</span></span>
+<span class="line"><span>.play-mode-indicator &#123;</span></span>
+<span class="line"><span>  width: 6px;</span></span>
+<span class="line"><span>  height: 6px;</span></span>
+<span class="line"><span>  border-radius: 50%;</span></span>
+<span class="line"><span>  margin-right: 6px;</span></span>
+<span class="line"><span>  background: #667eea;</span></span>
+<span class="line"><span>  transition: background 0.3s ease;</span></span>
+<span class="line"><span>  flex-shrink: 0;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>.play-mode-indicator.list &#123; background: #667eea; &#125;</span></span>
+<span class="line"><span>.play-mode-indicator.random &#123; background: #f5222d; &#125;</span></span>
+<span class="line"><span>&#x3C;/style></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&#x3C;script></span></span>
+<span class="line"><span>// 等待页面加载完成后初始化播放器</span></span>
+<span class="line"><span>document.addEventListener('DOMContentLoaded', function() &#123;</span></span>
+<span class="line"><span>  // 检查是否已经存在播放器容器</span></span>
+<span class="line"><span>  if (document.querySelector('.music-player-container')) &#123;</span></span>
+<span class="line"><span>    console.log('音乐播放器已存在');</span></span>
+<span class="line"><span>    return;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 自动计算正确的路径</span></span>
+<span class="line"><span>  function getCorrectPath(relativePath) &#123;</span></span>
+<span class="line"><span>    const currentPath = window.location.pathname;</span></span>
+<span class="line"><span>    const currentUrl = window.location.href;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    // 如果当前页面是 _posts 目录下的文章页面</span></span>
+<span class="line"><span>    if (currentPath.includes('/_posts/') || currentPath.includes('/categories/') || </span></span>
+<span class="line"><span>        currentPath.includes('/tags/') || currentPath.includes('/about/')) &#123;</span></span>
+<span class="line"><span>      // 这些页面在 source 目录下，需要返回上级目录</span></span>
+<span class="line"><span>      return '../' + relativePath;</span></span>
+<span class="line"><span>    &#125;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    // 如果是文章详情页（通常是 /年/月/日/文章名/ 格式）</span></span>
+<span class="line"><span>    const pathParts = currentPath.split('/').filter(p => p);</span></span>
+<span class="line"><span>    if (pathParts.length >= 4 &#x26;&#x26; /^\d&#123;4&#125;$/.test(pathParts[0]) &#x26;&#x26; /^\d&#123;2&#125;$/.test(pathParts[1])) &#123;</span></span>
+<span class="line"><span>      // 计算需要返回多少级目录才能到 source 目录</span></span>
+<span class="line"><span>      const levelsUp = pathParts.length;</span></span>
+<span class="line"><span>      return '../'.repeat(levelsUp) + relativePath;</span></span>
+<span class="line"><span>    &#125;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    // 主页或其他页面，使用相对路径</span></span>
+<span class="line"><span>    return relativePath;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 创建播放器容器</span></span>
+<span class="line"><span>  const container = document.createElement('div');</span></span>
+<span class="line"><span>  container.className = 'music-player-container';</span></span>
+<span class="line"><span>  container.innerHTML = `</span></span>
+<span class="line"><span>    &#x3C;!-- 圆形音乐封面 --></span></span>
+<span class="line"><span>    &#x3C;div class="music-avatar" id="music-avatar"></span></span>
+<span class="line"><span>      &#x3C;img src="$&#123;getCorrectPath('music-cover/Undying Macula.jpg')&#125;" alt="专辑封面" class="music-avatar-img" id="avatar-img" onerror="this.src='data:image/svg+xml,&#x3C;svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 24 24\">&#x3C;rect width=\"24\" height=\"24\" fill=\"%23667eea\"/>&#x3C;text x=\"12\" y=\"16\" font-family=\"Arial\" font-size=\"12\" fill=\"white\" text-anchor=\"middle\">Music&#x3C;/text>&#x3C;/svg>'"></span></span>
+<span class="line"><span>      &#x3C;div class="play-overlay"></span></span>
+<span class="line"><span>        &#x3C;button class="play-btn" id="avatar-play-btn" title="播放/暂停"></span></span>
+<span class="line"><span>          &#x3C;i class="fa fa-play" id="avatar-play-icon">&#x3C;/i></span></span>
+<span class="line"><span>        &#x3C;/button></span></span>
+<span class="line"><span>      &#x3C;/div></span></span>
+<span class="line"><span>    &#x3C;/div></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    &#x3C;!-- 音乐控制面板 --></span></span>
+<span class="line"><span>    &#x3C;div class="music-panel" id="music-panel"></span></span>
+<span class="line"><span>      &#x3C;!-- 播放列表 --></span></span>
+<span class="line"><span>      &#x3C;div class="playlist-section"></span></span>
+<span class="line"><span>        &#x3C;div class="playlist-header"></span></span>
+<span class="line"><span>          &#x3C;div class="playlist-title">播放列表&#x3C;/div></span></span>
+<span class="line"><span>        &#x3C;/div></span></span>
+<span class="line"><span>        &#x3C;div class="playlist-items" id="playlist"></span></span>
+<span class="line"><span>          &#x3C;!-- 播放列表项将通过JavaScript动态生成 --></span></span>
+<span class="line"><span>        &#x3C;/div></span></span>
+<span class="line"><span>      &#x3C;/div></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>      &#x3C;!-- 控制栏 --></span></span>
+<span class="line"><span>      &#x3C;div class="controls-section"></span></span>
+<span class="line"><span>        &#x3C;!-- 当前播放信息 --></span></span>
+<span class="line"><span>        &#x3C;div class="current-track"></span></span>
+<span class="line"><span>          &#x3C;div class="track-name" id="current-track-name">Undying Macula&#x3C;/div></span></span>
+<span class="line"><span>          &#x3C;div class="track-artist" id="current-track-artist">Ashrount&#x3C;/div></span></span>
+<span class="line"><span>        &#x3C;/div></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>        &#x3C;!-- 进度条 --></span></span>
+<span class="line"><span>        &#x3C;div class="progress-container"></span></span>
+<span class="line"><span>          &#x3C;div class="progress-bar" id="progress-bar"></span></span>
+<span class="line"><span>            &#x3C;div class="progress" id="progress">&#x3C;/div></span></span>
+<span class="line"><span>          &#x3C;/div></span></span>
+<span class="line"><span>          &#x3C;div class="time-info"></span></span>
+<span class="line"><span>            &#x3C;span id="current-time">00:00&#x3C;/span></span></span>
+<span class="line"><span>            &#x3C;span id="total-time">02:43&#x3C;/span></span></span>
+<span class="line"><span>          &#x3C;/div></span></span>
+<span class="line"><span>        &#x3C;/div></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>        &#x3C;!-- 控制按钮 --></span></span>
+<span class="line"><span>        &#x3C;div class="controls-group"></span></span>
+<span class="line"><span>          &#x3C;button class="control-btn" id="mode-btn" title="播放模式"></span></span>
+<span class="line"><span>            &#x3C;i class="fa fa-random" id="mode-icon">&#x3C;/i></span></span>
+<span class="line"><span>          &#x3C;/button></span></span>
+<span class="line"><span>          &#x3C;button class="control-btn" id="prev-btn" title="上一首"></span></span>
+<span class="line"><span>            &#x3C;i class="fa fa-step-backward">&#x3C;/i></span></span>
+<span class="line"><span>          &#x3C;/button></span></span>
+<span class="line"><span>          &#x3C;button class="control-btn main" id="main-play-btn" title="播放/暂停"></span></span>
+<span class="line"><span>            &#x3C;i class="fa fa-play" id="main-play-icon">&#x3C;/i></span></span>
+<span class="line"><span>          &#x3C;/button></span></span>
+<span class="line"><span>          &#x3C;button class="control-btn" id="next-btn" title="下一首"></span></span>
+<span class="line"><span>            &#x3C;i class="fa fa-step-forward">&#x3C;/i></span></span>
+<span class="line"><span>          &#x3C;/button></span></span>
+<span class="line"><span>          &#x3C;div class="play-mode-indicator" id="play-mode-indicator">&#x3C;/div></span></span>
+<span class="line"><span>        &#x3C;/div></span></span>
+<span class="line"><span>      &#x3C;/div></span></span>
+<span class="line"><span>    &#x3C;/div></span></span>
+<span class="line"><span>  `;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 插入到body末尾</span></span>
+<span class="line"><span>  document.body.appendChild(container);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 初始化播放器</span></span>
+<span class="line"><span>  initMusicPlayer();</span></span>
+<span class="line"><span>&#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>// 全局变量</span></span>
+<span class="line"><span>let ap = null;</span></span>
+<span class="line"><span>let isPlaying = false;</span></span>
+<span class="line"><span>let currentVolume = 0.7;</span></span>
+<span class="line"><span>let playMode = 'list'; // 只有 'list' 和 'random' 两种模式</span></span>
+<span class="line"><span>let panelTimeout = null;</span></span>
+<span class="line"><span>let isPanelVisible = false;</span></span>
+<span class="line"><span>let isSeeking = false;</span></span>
+<span class="line"><span>let isDraggingProgress = false;</span></span>
+<span class="line"><span>let lastRandomIndex = -1;</span></span>
+<span class="line"><span>let currentTrackIndex = 0;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>// 自动计算当前页面的基础路径</span></span>
+<span class="line"><span>function getBasePath() &#123;</span></span>
+<span class="line"><span>  const currentPath = window.location.pathname;</span></span>
+<span class="line"><span>  const currentUrl = window.location.href;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 如果当前页面是 _posts 目录下的文章页面</span></span>
+<span class="line"><span>  if (currentPath.includes('/_posts/') || currentPath.includes('/categories/') || </span></span>
+<span class="line"><span>      currentPath.includes('/tags/') || currentPath.includes('/about/')) &#123;</span></span>
+<span class="line"><span>    // 这些页面在 source 目录下，需要返回上级目录</span></span>
+<span class="line"><span>    return '../';</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 如果是文章详情页（Hexo格式：/年/月/日/文章名/）</span></span>
+<span class="line"><span>  const pathParts = currentPath.split('/').filter(p => p);</span></span>
+<span class="line"><span>  if (pathParts.length >= 4 &#x26;&#x26; /^\d&#123;4&#125;$/.test(pathParts[0]) &#x26;&#x26; /^\d&#123;2&#125;$/.test(pathParts[1])) &#123;</span></span>
+<span class="line"><span>    // 计算需要返回多少级目录才能到根目录</span></span>
+<span class="line"><span>    const levelsUp = pathParts.length;</span></span>
+<span class="line"><span>    return '../'.repeat(levelsUp);</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 主页或其他页面，使用相对路径</span></span>
+<span class="line"><span>  return './';</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>// 音乐列表 - 使用动态路径</span></span>
+<span class="line"><span>const musicList = [</span></span>
+<span class="line"><span>  &#123;</span></span>
+<span class="line"><span>    name: 'Undying Macula',</span></span>
+<span class="line"><span>    artist: 'Ashrount',</span></span>
+<span class="line"><span>    url: 'music/Undying Macula.mp3',</span></span>
+<span class="line"><span>    cover: 'music-cover/Undying Macula.jpg',</span></span>
+<span class="line"><span>    duration: '02:43',</span></span>
+<span class="line"><span>  &#125;,</span></span>
+<span class="line"><span>  &#123;</span></span>
+<span class="line"><span>    name: 'AFTER PANDORA',</span></span>
+<span class="line"><span>    artist: '削除',</span></span>
+<span class="line"><span>    url: 'music/AFTER PANDORA.mp3',</span></span>
+<span class="line"><span>    cover: 'music-cover/AFTER PANDORA.png',</span></span>
+<span class="line"><span>    duration: '04:06',</span></span>
+<span class="line"><span>  &#125;,</span></span>
+<span class="line"><span>  &#123;</span></span>
+<span class="line"><span>    name: 'Androgynos (Full Phase)',</span></span>
+<span class="line"><span>    artist: 'BlackY',</span></span>
+<span class="line"><span>    url: 'music/Androgynos (Full Phase).mp3',</span></span>
+<span class="line"><span>    cover: 'music-cover/Androgynos (Full Phase).jpg',</span></span>
+<span class="line"><span>    duration: '04:56',</span></span>
+<span class="line"><span>  &#125;,</span></span>
+<span class="line"><span>  &#123;</span></span>
+<span class="line"><span>    name: 'Immutable',</span></span>
+<span class="line"><span>    artist: 'Juggernaut.',</span></span>
+<span class="line"><span>    url: 'music/Immutable.mp3',</span></span>
+<span class="line"><span>    cover: 'music-cover/Immutable.png',</span></span>
+<span class="line"><span>    duration: '05:25',</span></span>
+<span class="line"><span>  &#125;,</span></span>
+<span class="line"><span>];</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function initMusicPlayer() &#123;</span></span>
+<span class="line"><span>  // 创建隐藏的 APlayer 容器</span></span>
+<span class="line"><span>  const playerContainer = document.createElement('div');</span></span>
+<span class="line"><span>  playerContainer.id = 'aplayer-hidden-container';</span></span>
+<span class="line"><span>  playerContainer.style.display = 'none';</span></span>
+<span class="line"><span>  document.body.appendChild(playerContainer);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 获取基础路径</span></span>
+<span class="line"><span>  const basePath = getBasePath();</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 修正音乐文件路径</span></span>
+<span class="line"><span>  const correctedMusicList = musicList.map(track => &#123;</span></span>
+<span class="line"><span>    return &#123;</span></span>
+<span class="line"><span>      ...track,</span></span>
+<span class="line"><span>      url: basePath + track.url,</span></span>
+<span class="line"><span>      cover: basePath + track.cover</span></span>
+<span class="line"><span>    &#125;;</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 简化：始终使用列表循环</span></span>
+<span class="line"><span>  ap = new APlayer(&#123;</span></span>
+<span class="line"><span>    container: document.getElementById('aplayer-hidden-container'),</span></span>
+<span class="line"><span>    audio: correctedMusicList,</span></span>
+<span class="line"><span>    theme: '#667eea',</span></span>
+<span class="line"><span>    loop: 'all', // 始终使用全部循环</span></span>
+<span class="line"><span>    order: 'list',</span></span>
+<span class="line"><span>    preload: 'auto',</span></span>
+<span class="line"><span>    volume: currentVolume,</span></span>
+<span class="line"><span>    mutex: true,</span></span>
+<span class="line"><span>    lrcType: 0,</span></span>
+<span class="line"><span>    fixed: false,</span></span>
+<span class="line"><span>    mini: false,</span></span>
+<span class="line"><span>    autoplay: false,</span></span>
+<span class="line"><span>    controls: false</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 事件监听</span></span>
+<span class="line"><span>  ap.on('play', () => &#123;</span></span>
+<span class="line"><span>    isPlaying = true;</span></span>
+<span class="line"><span>    updatePlayButton();</span></span>
+<span class="line"><span>    updateAvatarPlayButton();</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  ap.on('pause', () => &#123;</span></span>
+<span class="line"><span>    isPlaying = false;</span></span>
+<span class="line"><span>    updatePlayButton();</span></span>
+<span class="line"><span>    updateAvatarPlayButton();</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  ap.on('canplay', () => &#123;</span></span>
+<span class="line"><span>    updateTrackInfo();</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 监听 timeupdate 更新进度</span></span>
+<span class="line"><span>  ap.on('timeupdate', () => &#123;</span></span>
+<span class="line"><span>    if (!isSeeking &#x26;&#x26; !isDraggingProgress) &#123;</span></span>
+<span class="line"><span>      updateProgress();</span></span>
+<span class="line"><span>    &#125;</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  ap.on('loadedmetadata', () => &#123;</span></span>
+<span class="line"><span>    updateProgress();</span></span>
+<span class="line"><span>    const totalTime = document.getElementById('total-time');</span></span>
+<span class="line"><span>    if (ap.audio.duration &#x26;&#x26; !isNaN(ap.audio.duration)) &#123;</span></span>
+<span class="line"><span>      totalTime.textContent = formatTime(ap.audio.duration);</span></span>
+<span class="line"><span>    &#125;</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 监听歌曲切换</span></span>
+<span class="line"><span>  ap.on('listswitch', (index) => &#123;</span></span>
+<span class="line"><span>    currentTrackIndex = index.item;</span></span>
+<span class="line"><span>    updateTrackInfo();</span></span>
+<span class="line"><span>    updateActivePlaylistItem(index.item);</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  // 初始化 UI</span></span>
+<span class="line"><span>  renderPlaylist();</span></span>
+<span class="line"><span>  setupEventListeners();</span></span>
+<span class="line"><span>  positionPanel();</span></span>
+<span class="line"><span>  updatePlayModeUI();</span></span>
+<span class="line"><span>  hidePanel();</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function setupEventListeners() &#123;</span></span>
+<span class="line"><span>  const avatar = document.getElementById('music-avatar');</span></span>
+<span class="line"><span>  const panel = document.getElementById('music-panel');</span></span>
+<span class="line"><span>  const progressBar = document.getElementById('progress-bar');</span></span>
+<span class="line"><span>  const playlistItems = document.getElementById('playlist');</span></span>
+<span class="line"><span>  const avatarBtn = document.getElementById('avatar-play-btn');</span></span>
+<span class="line"><span>  const modeBtn = document.getElementById('mode-btn');</span></span>
+<span class="line"><span>  const prevBtn = document.getElementById('prev-btn');</span></span>
+<span class="line"><span>  const mainBtn = document.getElementById('main-play-btn');</span></span>
+<span class="line"><span>  const nextBtn = document.getElementById('next-btn');</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  if (!avatar || !panel || !progressBar) &#123;</span></span>
+<span class="line"><span>    console.error('播放器元素未找到');</span></span>
+<span class="line"><span>    return;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  // 滚动传递问题</span></span>
+<span class="line"><span>  playlistItems.addEventListener('wheel', function(e) &#123;</span></span>
+<span class="line"><span>    const isAtBottom = this.scrollHeight - this.scrollTop &#x3C;= this.clientHeight + 1;</span></span>
+<span class="line"><span>    const isAtTop = this.scrollTop === 0;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    if (isAtBottom &#x26;&#x26; e.deltaY > 0) &#123;</span></span>
+<span class="line"><span>      e.stopPropagation();</span></span>
+<span class="line"><span>      e.preventDefault();</span></span>
+<span class="line"><span>      return false;</span></span>
+<span class="line"><span>    &#125;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    if (isAtTop &#x26;&#x26; e.deltaY &#x3C; 0) &#123;</span></span>
+<span class="line"><span>      e.stopPropagation();</span></span>
+<span class="line"><span>      e.preventDefault();</span></span>
+<span class="line"><span>      return false;</span></span>
+<span class="line"><span>    &#125;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>  &#125;, &#123; passive: false &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  // 封面鼠标事件</span></span>
+<span class="line"><span>  avatar.addEventListener('mouseenter', function(e) &#123;</span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>    showPanel();</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  avatar.addEventListener('mouseleave', function(e) &#123;</span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>    if (!isPanelVisible) &#123;</span></span>
+<span class="line"><span>      hidePanel();</span></span>
+<span class="line"><span>    &#125;</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  // 进度条事件处理</span></span>
+<span class="line"><span>  progressBar.addEventListener('mousedown', function(e) &#123;</span></span>
+<span class="line"><span>    e.preventDefault();</span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    if (!ap.audio || !ap.audio.duration) return;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    isDraggingProgress = true;</span></span>
+<span class="line"><span>    progressBar.classList.add('dragging');</span></span>
+<span class="line"><span>    isSeeking = true;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    const rect = progressBar.getBoundingClientRect();</span></span>
+<span class="line"><span>    const x = e.clientX;</span></span>
+<span class="line"><span>    const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    updateProgressDisplay(percent);</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    document.addEventListener('mousemove', handleProgressDragMove);</span></span>
+<span class="line"><span>    document.addEventListener('mouseup', handleProgressDragEnd);</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  progressBar.addEventListener('click', function(e) &#123;</span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    if (!ap.audio || !ap.audio.duration) return;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    const rect = progressBar.getBoundingClientRect();</span></span>
+<span class="line"><span>    const x = e.clientX;</span></span>
+<span class="line"><span>    const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));</span></span>
+<span class="line"><span>    const targetTime = percent * ap.audio.duration;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    isSeeking = true;</span></span>
+<span class="line"><span>    ap.seek(targetTime);</span></span>
+<span class="line"><span>    updateProgressDisplay(percent);</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    if (isPlaying) &#123;</span></span>
+<span class="line"><span>      setTimeout(() => &#123;</span></span>
+<span class="line"><span>        ap.play();</span></span>
+<span class="line"><span>      &#125;, 10);</span></span>
+<span class="line"><span>    &#125;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    setTimeout(() => &#123;</span></span>
+<span class="line"><span>      isSeeking = false;</span></span>
+<span class="line"><span>    &#125;, 100);</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  // 按钮事件</span></span>
+<span class="line"><span>  avatarBtn.addEventListener('click', function(e) &#123;</span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>    togglePlayPause();</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  modeBtn.addEventListener('click', function(e) &#123;</span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>    changePlayMode();</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  prevBtn.addEventListener('click', function(e) &#123;</span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>    previousTrack();</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  mainBtn.addEventListener('click', function(e) &#123;</span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>    togglePlayPause();</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  nextBtn.addEventListener('click', function(e) &#123;</span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>    nextTrack();</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  // 面板鼠标事件</span></span>
+<span class="line"><span>  panel.addEventListener('mouseenter', function(e) &#123;</span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>    isPanelVisible = true;</span></span>
+<span class="line"><span>    if (panelTimeout) &#123;</span></span>
+<span class="line"><span>      clearTimeout(panelTimeout);</span></span>
+<span class="line"><span>    &#125;</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  panel.addEventListener('mouseleave', function(e) &#123;</span></span>
+<span class="line"><span>    e.stopPropagation();</span></span>
+<span class="line"><span>    isPanelVisible = false;</span></span>
+<span class="line"><span>    panelTimeout = setTimeout(hidePanel, 300);</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  window.addEventListener('scroll', positionPanel);</span></span>
+<span class="line"><span>  window.addEventListener('resize', positionPanel);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  document.addEventListener('click', function(e) &#123;</span></span>
+<span class="line"><span>    const avatar = document.getElementById('music-avatar');</span></span>
+<span class="line"><span>    const panel = document.getElementById('music-panel');</span></span>
+<span class="line"><span>    if (!avatar.contains(e.target) &#x26;&#x26; !panel.contains(e.target)) &#123;</span></span>
+<span class="line"><span>      hidePanel();</span></span>
+<span class="line"><span>    &#125;</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>// 进度条拖拽移动</span></span>
+<span class="line"><span>function handleProgressDragMove(e) &#123;</span></span>
+<span class="line"><span>  if (!isDraggingProgress || !ap.audio || !ap.audio.duration) return;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  e.preventDefault();</span></span>
+<span class="line"><span>  e.stopPropagation();</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  const progressBar = document.getElementById('progress-bar');</span></span>
+<span class="line"><span>  const rect = progressBar.getBoundingClientRect();</span></span>
+<span class="line"><span>  const x = e.clientX;</span></span>
+<span class="line"><span>  const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  updateProgressDisplay(percent);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>// 进度条拖拽结束</span></span>
+<span class="line"><span>function handleProgressDragEnd(e) &#123;</span></span>
+<span class="line"><span>  if (!isDraggingProgress || !ap.audio || !ap.audio.duration) return;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  e.preventDefault();</span></span>
+<span class="line"><span>  e.stopPropagation();</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  isDraggingProgress = false;</span></span>
+<span class="line"><span>  const progressBar = document.getElementById('progress-bar');</span></span>
+<span class="line"><span>  progressBar.classList.remove('dragging');</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  const rect = progressBar.getBoundingClientRect();</span></span>
+<span class="line"><span>  const x = e.clientX;</span></span>
+<span class="line"><span>  const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));</span></span>
+<span class="line"><span>  const targetTime = percent * ap.audio.duration;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  ap.seek(targetTime);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (isPlaying) &#123;</span></span>
+<span class="line"><span>    ap.pause();</span></span>
+<span class="line"><span>    setTimeout(() => &#123;</span></span>
+<span class="line"><span>      ap.play();</span></span>
+<span class="line"><span>    &#125;, 10);</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  updateProgressDisplay(percent);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  document.removeEventListener('mousemove', handleProgressDragMove);</span></span>
+<span class="line"><span>  document.removeEventListener('mouseup', handleProgressDragEnd);</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  setTimeout(() => &#123;</span></span>
+<span class="line"><span>    isSeeking = false;</span></span>
+<span class="line"><span>  &#125;, 100);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function updateProgressDisplay(percent) &#123;</span></span>
+<span class="line"><span>  const progress = document.getElementById('progress');</span></span>
+<span class="line"><span>  const currentTimeEl = document.getElementById('current-time');</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (progress) &#123;</span></span>
+<span class="line"><span>    progress.style.width = `$&#123;percent * 100&#125;%`;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (currentTimeEl &#x26;&#x26; ap.audio &#x26;&#x26; ap.audio.duration) &#123;</span></span>
+<span class="line"><span>    const targetTime = percent * ap.audio.duration;</span></span>
+<span class="line"><span>    currentTimeEl.textContent = formatTime(targetTime);</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function updateProgress() &#123;</span></span>
+<span class="line"><span>  if (!ap.audio || !ap.audio.duration || isNaN(ap.audio.duration) || isSeeking || isDraggingProgress) &#123;</span></span>
+<span class="line"><span>    return;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  const currentTime = ap.audio.currentTime || 0;</span></span>
+<span class="line"><span>  const duration = ap.audio.duration || 0;</span></span>
+<span class="line"><span>  const percent = duration > 0 ? (currentTime / duration) * 100 : 0;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  const progress = document.getElementById('progress');</span></span>
+<span class="line"><span>  if (progress) &#123;</span></span>
+<span class="line"><span>    progress.style.width = `$&#123;percent&#125;%`;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  const currentTimeEl = document.getElementById('current-time');</span></span>
+<span class="line"><span>  if (currentTimeEl) currentTimeEl.textContent = formatTime(currentTime);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function showPanel() &#123;</span></span>
+<span class="line"><span>  const panel = document.getElementById('music-panel');</span></span>
+<span class="line"><span>  if (panel) &#123;</span></span>
+<span class="line"><span>    panel.classList.add('show');</span></span>
+<span class="line"><span>    positionPanel();</span></span>
+<span class="line"><span>    isPanelVisible = true;</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    if (panelTimeout) &#123;</span></span>
+<span class="line"><span>      clearTimeout(panelTimeout);</span></span>
+<span class="line"><span>    &#125;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function hidePanel() &#123;</span></span>
+<span class="line"><span>  const panel = document.getElementById('music-panel');</span></span>
+<span class="line"><span>  if (panel) &#123;</span></span>
+<span class="line"><span>    panel.classList.remove('show');</span></span>
+<span class="line"><span>    isPanelVisible = false;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function positionPanel() &#123;</span></span>
+<span class="line"><span>  const avatar = document.getElementById('music-avatar');</span></span>
+<span class="line"><span>  const panel = document.getElementById('music-panel');</span></span>
+<span class="line"><span>  if (!avatar || !panel) return;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  const avatarRect = avatar.getBoundingClientRect();</span></span>
+<span class="line"><span>  const viewportWidth = window.innerWidth;</span></span>
+<span class="line"><span>  const viewportHeight = window.innerHeight;</span></span>
+<span class="line"><span>  const panelWidth = 280;</span></span>
+<span class="line"><span>  const panelHeight = 320;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  let left = avatarRect.right + 10;</span></span>
+<span class="line"><span>  let top = avatarRect.top;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (left + panelWidth > viewportWidth - 20) &#123;</span></span>
+<span class="line"><span>    left = avatarRect.left - panelWidth - 10;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (left &#x3C; 20) &#123;</span></span>
+<span class="line"><span>    left = 20;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (top + panelHeight > viewportHeight - 20) &#123;</span></span>
+<span class="line"><span>    top = viewportHeight - panelHeight - 20;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (top &#x3C; 20) &#123;</span></span>
+<span class="line"><span>    top = 20;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  panel.style.left = left + 'px';</span></span>
+<span class="line"><span>  panel.style.top = top + 'px';</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function renderPlaylist() &#123;</span></span>
+<span class="line"><span>  const playlistEl = document.getElementById('playlist');</span></span>
+<span class="line"><span>  if (!playlistEl) return;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  playlistEl.innerHTML = '';</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  const basePath = getBasePath();</span></span>
+<span class="line"><span>  const correctedMusicList = musicList.map(track => (&#123;</span></span>
+<span class="line"><span>    ...track,</span></span>
+<span class="line"><span>    url: basePath + track.url,</span></span>
+<span class="line"><span>    cover: basePath + track.cover</span></span>
+<span class="line"><span>  &#125;));</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  correctedMusicList.forEach((track, index) => &#123;</span></span>
+<span class="line"><span>    const item = document.createElement('div');</span></span>
+<span class="line"><span>    item.className = 'playlist-item';</span></span>
+<span class="line"><span>    if (index === 0) item.classList.add('active');</span></span>
+<span class="line"><span>    item.innerHTML = `</span></span>
+<span class="line"><span>      &#x3C;div class="playlist-num">$&#123;index + 1&#125;&#x3C;/div></span></span>
+<span class="line"><span>      &#x3C;div class="playlist-info"></span></span>
+<span class="line"><span>        &#x3C;div class="playlist-track">$&#123;track.name&#125;&#x3C;/div></span></span>
+<span class="line"><span>        &#x3C;div class="playlist-artist">$&#123;track.artist&#125;&#x3C;/div></span></span>
+<span class="line"><span>      &#x3C;/div></span></span>
+<span class="line"><span>      &#x3C;div class="playlist-duration">$&#123;track.duration&#125;&#x3C;/div></span></span>
+<span class="line"><span>    `;</span></span>
+<span class="line"><span>    item.addEventListener('click', (e) => &#123;</span></span>
+<span class="line"><span>      e.stopPropagation();</span></span>
+<span class="line"><span>      playTrack(index);</span></span>
+<span class="line"><span>    &#125;);</span></span>
+<span class="line"><span>    playlistEl.appendChild(item);</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function playTrack(index) &#123;</span></span>
+<span class="line"><span>  currentTrackIndex = index;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (playMode === 'random') &#123;</span></span>
+<span class="line"><span>    lastRandomIndex = index;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  ap.list.switch(index);</span></span>
+<span class="line"><span>  ap.play();</span></span>
+<span class="line"><span>  updateActivePlaylistItem(index);</span></span>
+<span class="line"><span>  updateTrackInfo();</span></span>
+<span class="line"><span>  showPanel();</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function updateActivePlaylistItem(index) &#123;</span></span>
+<span class="line"><span>  document.querySelectorAll('.playlist-item').forEach((item, i) => &#123;</span></span>
+<span class="line"><span>    item.classList.toggle('active', i === index);</span></span>
+<span class="line"><span>  &#125;);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function togglePlayPause() &#123;</span></span>
+<span class="line"><span>  if (isPlaying) &#123;</span></span>
+<span class="line"><span>    ap.pause();</span></span>
+<span class="line"><span>  &#125; else &#123;</span></span>
+<span class="line"><span>    ap.play();</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  showPanel();</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function updatePlayButton() &#123;</span></span>
+<span class="line"><span>  const mainIcon = document.getElementById('main-play-icon');</span></span>
+<span class="line"><span>  const mainBtn = document.getElementById('main-play-btn');</span></span>
+<span class="line"><span>  if (isPlaying) &#123;</span></span>
+<span class="line"><span>    if (mainIcon) mainIcon.className = 'fa fa-pause';</span></span>
+<span class="line"><span>    if (mainBtn) mainBtn.title = '暂停';</span></span>
+<span class="line"><span>  &#125; else &#123;</span></span>
+<span class="line"><span>    if (mainIcon) mainIcon.className = 'fa fa-play';</span></span>
+<span class="line"><span>    if (mainBtn) mainBtn.title = '播放';</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function updateAvatarPlayButton() &#123;</span></span>
+<span class="line"><span>  const avatarIcon = document.getElementById('avatar-play-icon');</span></span>
+<span class="line"><span>  const avatarBtn = document.getElementById('avatar-play-btn');</span></span>
+<span class="line"><span>  if (isPlaying) &#123;</span></span>
+<span class="line"><span>    if (avatarIcon) avatarIcon.className = 'fa fa-pause';</span></span>
+<span class="line"><span>    if (avatarBtn) avatarBtn.title = '暂停';</span></span>
+<span class="line"><span>  &#125; else &#123;</span></span>
+<span class="line"><span>    if (avatarIcon) avatarIcon.className = 'fa fa-play';</span></span>
+<span class="line"><span>    if (avatarBtn) avatarBtn.title = '播放';</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function previousTrack() &#123;</span></span>
+<span class="line"><span>  if (playMode === 'random') &#123;</span></span>
+<span class="line"><span>    let randomIndex;</span></span>
+<span class="line"><span>    do &#123;</span></span>
+<span class="line"><span>      randomIndex = Math.floor(Math.random() * musicList.length);</span></span>
+<span class="line"><span>    &#125; while (musicList.length > 1 &#x26;&#x26; randomIndex === lastRandomIndex);</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    lastRandomIndex = randomIndex;</span></span>
+<span class="line"><span>    playTrack(randomIndex);</span></span>
+<span class="line"><span>  &#125; else &#123;</span></span>
+<span class="line"><span>    ap.skipBack();</span></span>
+<span class="line"><span>    if (!isPlaying) ap.play();</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  updateTrackInfo();</span></span>
+<span class="line"><span>  showPanel();</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function nextTrack() &#123;</span></span>
+<span class="line"><span>  if (playMode === 'random') &#123;</span></span>
+<span class="line"><span>    let randomIndex;</span></span>
+<span class="line"><span>    do &#123;</span></span>
+<span class="line"><span>      randomIndex = Math.floor(Math.random() * musicList.length);</span></span>
+<span class="line"><span>    &#125; while (musicList.length > 1 &#x26;&#x26; randomIndex === lastRandomIndex);</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span>    lastRandomIndex = randomIndex;</span></span>
+<span class="line"><span>    playTrack(randomIndex);</span></span>
+<span class="line"><span>  &#125; else &#123;</span></span>
+<span class="line"><span>    ap.skipForward();</span></span>
+<span class="line"><span>    if (!isPlaying) ap.play();</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  updateTrackInfo();</span></span>
+<span class="line"><span>  showPanel();</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function changePlayMode() &#123;</span></span>
+<span class="line"><span>  // 只有两种模式：列表循环和随机播放</span></span>
+<span class="line"><span>  const modes = [</span></span>
+<span class="line"><span>    &#123; id: 'list', name: '列表循环', icon: 'fa-list-ol' &#125;,</span></span>
+<span class="line"><span>    &#123; id: 'random', name: '随机播放', icon: 'fa-random' &#125;</span></span>
+<span class="line"><span>  ];</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  const currentIndex = modes.findIndex(mode => mode.id === playMode);</span></span>
+<span class="line"><span>  const nextIndex = (currentIndex + 1) % modes.length;</span></span>
+<span class="line"><span>  playMode = modes[nextIndex].id;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (playMode === 'random') &#123;</span></span>
+<span class="line"><span>    // 初始化随机播放</span></span>
+<span class="line"><span>    lastRandomIndex = -1;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  updatePlayModeUI();</span></span>
+<span class="line"><span>  showPanel();</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function updatePlayModeUI() &#123;</span></span>
+<span class="line"><span>  const modeBtn = document.getElementById('mode-btn');</span></span>
+<span class="line"><span>  const modeIcon = document.getElementById('mode-icon');</span></span>
+<span class="line"><span>  const indicator = document.getElementById('play-mode-indicator');</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  let title = '', icon = '', indicatorClass = '';</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (playMode === 'list') &#123;</span></span>
+<span class="line"><span>    title = '列表循环';</span></span>
+<span class="line"><span>    icon = 'fa-list-ol';</span></span>
+<span class="line"><span>    indicatorClass = 'list';</span></span>
+<span class="line"><span>  &#125; else if (playMode === 'random') &#123;</span></span>
+<span class="line"><span>    title = '随机播放';</span></span>
+<span class="line"><span>    icon = 'fa-random';</span></span>
+<span class="line"><span>    indicatorClass = 'random';</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (modeBtn) modeBtn.title = title;</span></span>
+<span class="line"><span>  if (modeIcon) modeIcon.className = 'fa ' + icon;</span></span>
+<span class="line"><span>  if (indicator) indicator.className = 'play-mode-indicator ' + indicatorClass;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function updateTrackInfo() &#123;</span></span>
+<span class="line"><span>  const basePath = getBasePath();</span></span>
+<span class="line"><span>  const correctedMusicList = musicList.map(track => (&#123;</span></span>
+<span class="line"><span>    ...track,</span></span>
+<span class="line"><span>    url: basePath + track.url,</span></span>
+<span class="line"><span>    cover: basePath + track.cover</span></span>
+<span class="line"><span>  &#125;));</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  const current = correctedMusicList[ap.list.index];</span></span>
+<span class="line"><span>  if (!current) return;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  const trackName = document.getElementById('current-track-name');</span></span>
+<span class="line"><span>  const trackArtist = document.getElementById('current-track-artist');</span></span>
+<span class="line"><span>  const avatarImg = document.getElementById('avatar-img');</span></span>
+<span class="line"><span>  const totalTime = document.getElementById('total-time');</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  if (trackName) trackName.textContent = current.name;</span></span>
+<span class="line"><span>  if (trackArtist) trackArtist.textContent = current.artist;</span></span>
+<span class="line"><span>  if (avatarImg) &#123;</span></span>
+<span class="line"><span>    avatarImg.src = current.cover;</span></span>
+<span class="line"><span>  &#125;</span></span>
+<span class="line"><span>  if (totalTime) totalTime.textContent = current.duration;</span></span>
+<span class="line"><span>  </span></span>
+<span class="line"><span>  updateActivePlaylistItem(ap.list.index);</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function formatTime(seconds) &#123;</span></span>
+<span class="line"><span>  if (isNaN(seconds) || seconds === 0) return '00:00';</span></span>
+<span class="line"><span>  const mins = Math.floor(seconds / 60);</span></span>
+<span class="line"><span>  const secs = Math.floor(seconds % 60);</span></span>
+<span class="line"><span>  return `$&#123;mins.toString().padStart(2, '0')&#125;:$&#123;secs.toString().padStart(2, '0')&#125;`;</span></span>
+<span class="line"><span>&#125;</span></span>
+<span class="line"><span>&#x3C;/script></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&#x3C;!-- 引入 APlayer --></span></span>
+<span class="line"><span>&#x3C;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css"></span></span>
+<span class="line"><span>&#x3C;script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js">&#x3C;/script></span></span></code></pre></div>
 
 <p>最后得到的结果就是现在右下角的那个小播放器了，然后要加自己的歌曲需要在音乐列表那里手动添加音乐信息，格式是相同的。音乐信息可以包含歌词文件，Aplayer是支持歌词功能的，但这里我没有调试，要添加歌词功能的可能还得让AI调试一下</p>
 <div align="center">
@@ -2566,7 +2566,7 @@ function formatTime(seconds) &#123;
 </div>
 
 <p>最后四连</p>
-<pre><code>hexo clean && hexo g && hexo d && hexo s</code></pre>
+<div class="shiki" data-theme="github-light"><pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>hexo clean &#x26;&#x26; hexo g &#x26;&#x26; hexo d &#x26;&#x26; hexo s</span></span></code></pre></div>
 
 <hr>
 <p><strong>注意：</strong></p>
@@ -2640,14 +2640,14 @@ function formatTime(seconds) &#123;
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">22k</span>
+    <span title="站点总字数">24k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">20 分钟</span>
+    <span title="站点阅读时长">22 分钟</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
