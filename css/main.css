@@ -1162,7 +1162,7 @@ pre code {
     transition: all 0.2s ease-in-out;
   }
   .links-of-author a::before {
-    background: #0bffe9;
+    background: #b1f5aa;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -2681,97 +2681,53 @@ header.header {
   max-width: unset;
   box-sizing: border-box;
 }
-/* 柔和浅蓝渐变背景 */
-body {
-  background: linear-gradient(135deg, #f5f9ff 0%, #f0f8ff 25%, #e6f7ff 50%, #e0f7fa 75%, #e1f5fe 100%) !important;
-  background-attachment: fixed;
-  min-height: 100vh;
-  color: #2c3e50;
-}
-/* 置顶样式优化 */
-.post-meta-item .fa-thumb-tack {
-  color: #7d26cd;
-  font-weight: bold;
-}
-/* 置顶标签样式 */
-.post-meta-item[class*="sticky"] {
-  color: #7d26cd;
-  font-weight: bold;
-}
-/* Shiki 代码高亮样式 */
+/* Shiki 代码高亮样式调整 */
 .shiki {
-  line-height: 1.6em;
   margin: 1em 0;
-  padding: 16px;
-  border-radius: 8px;
+  padding: 12px 16px;
+  border-radius: 6px;
   overflow-x: auto;
   font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
-  font-size: 14px;
+  font-size: 14px !important; /* 调整字体大小 */
+  line-height: 1.4 !important; /* 调整行间距 */
   background: #f6f8fa !important;
   border: 1px solid #e1e4e8;
 }
-/* 明暗色切换 */
-[data-theme='dark'] .shiki {
-  background: #0d1117 !important;
-  border-color: #30363d;
-}
-[data-theme='dark'] .shiki,
-[data-theme='dark'] .shiki span {
-  color: inherit !important;
+/* 代码行调整 */
+.shiki .line {
+  display: block;
+  min-height: 1.2em;
+  line-height: 1.4 !important; /* 确保行高一致 */
 }
 /* 代码容器 */
 .shiki pre {
-  margin: 0;
-  padding: 0;
+  margin: 0 !important;
+  padding: 0 !important;
   background: transparent !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
 }
-/* 代码行 */
 .shiki code {
   display: block;
   padding: 0;
   background: transparent !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace !important;
 }
-/* 行号样式 */
-.shiki .line {
-  display: block;
-  min-height: 1.2em;
+/* 暗色模式 */
+[data-theme='dark'] .shiki {
+  background: #0d1117 !important;
+  border-color: #30363d;
 }
-/* figcaption 样式 */
-.shiki figcaption {
-  font-size: 0.9em;
-  font-weight: 600;
-  color: #586069;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e1e4e8;
-}
-[data-theme='dark'] .shiki figcaption {
-  color: #8b949e;
-  border-bottom-color: #30363d;
-}
-/* 语法高亮颜色调整 */
-.shiki .keyword {
-  color: #d73a49;
-}
-.shiki .function {
-  color: #6f42c1;
-}
-.shiki .string {
-  color: #032f62;
-}
-.shiki .comment {
-  color: #6a737d;
-  font-style: italic;
-}
-[data-theme='dark'] .shiki .keyword {
-  color: #ff7b72;
-}
-[data-theme='dark'] .shiki .function {
-  color: #d2a8ff;
-}
-[data-theme='dark'] .shiki .string {
-  color: #a5d6ff;
-}
-[data-theme='dark'] .shiki .comment {
-  color: #8b949e;
+/* 移动端调整 */
+@media (max-width: 767px) {
+  .shiki {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+    margin: 0.8em -16px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
 }
