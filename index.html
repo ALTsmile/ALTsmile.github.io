@@ -1371,7 +1371,7 @@ function formatTime(seconds) {
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2025-12-26 22:18:11" itemprop="dateModified" datetime="2025-12-26T22:18:11+08:00">2025-12-26</time>
+      <time title="修改时间：2025-12-27 18:31:59" itemprop="dateModified" datetime="2025-12-27T18:31:59+08:00">2025-12-27</time>
     </span>
 
   
@@ -1381,14 +1381,14 @@ function formatTime(seconds) {
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>336</span>
+      <span>27k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>24 分钟</span>
     </span>
 </div>
 
@@ -1400,15 +1400,1173 @@ function formatTime(seconds) {
     
     <div class="post-body" itemprop="articleBody">
           <p>本来想用网易云外链简单明了的，结果发现有些歌曲网易云要vip，我就想着能不能上传本地音乐到仓库，然后让AI写个简单的播放器功能</p>
-<h3 id="1-下载Aplayer插件并配置"><a href="#1-下载Aplayer插件并配置" class="headerlink" title="1. 下载Aplayer插件并配置"></a>1. 下载Aplayer插件并配置</h3><p>下载Aplayer插件</p>
+<h2 id="1-下载Aplayer插件并配置"><a href="#1-下载Aplayer插件并配置" class="headerlink" title="1. 下载Aplayer插件并配置"></a>1. 下载Aplayer插件并配置</h2><ul>
+<li>下载Aplayer插件</li>
+</ul>
+<pre><code class="highlight cmd">npm install hexo-tag-aplayer --save</code></pre>
+
+<ul>
+<li>然后在NexT的配置文件<code>_config.yml</code>中在最后一行输入以下配置信息</li>
+</ul>
+<pre><code class="highlight plaintext">aplayer:
+  cdn: https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js
+  style_cdn: https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css
+  meting: true # 如果要使用 MetingJS</code></pre>
+
+<h2 id="2-配置一个音乐播放器"><a href="#2-配置一个音乐播放器" class="headerlink" title="2. 配置一个音乐播放器"></a>2. 配置一个音乐播放器</h2><p>这一步比较麻烦  </p>
+<ul>
+<li>配置NexT的<code>_config.yml</code></li>
+</ul>
+<p>我选择把播放器寄存在侧边栏，让侧边栏调用。所以找到<code>custom_file_path</code>，把sidebar前的#去掉，然后写上路径<code>source/_data/sidebar-music.njk</code></p>
+<ul>
+<li>创建存放歌曲和歌曲封面的文件夹</li>
+</ul>
+<p>这一步我选择把歌曲和歌曲封面分别存放到<code>source/music</code>和<code>source/music-cover</code></p>
+<ul>
+<li>配置音乐播放器</li>
+</ul>
+<p>在<code>source/_data</code>下新建一个文件<code>sidebar-music.njk</code>，然后找AI生成代码，我这边已经调试了很久，把代码复制粘贴上去即可</p>
+<pre><code class="highlight plaintext">&lt;style&gt;
+/* 音乐播放器容器 - 固定在右下角 */
+.music-player-container &#123;
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  z-index: 9999;
+  width: 80px;
+  height: 80px;
+&#125;
+
+/* 圆形音乐封面 */
+.music-avatar &#123;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 10000;
+&#125;
+
+.music-avatar:hover &#123;
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+&#125;
+
+.music-avatar-img &#123;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.7);
+  transition: filter 0.3s ease;
+&#125;
+
+.music-avatar:hover .music-avatar-img &#123;
+  filter: brightness(1);
+&#125;
+
+/* 播放按钮覆盖层 */
+.play-overlay &#123;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+  border-radius: 50%;
+  opacity: 1;
+  transition: opacity 0.3s ease, background 0.3s ease;
+&#125;
+
+.music-avatar:hover .play-overlay &#123;
+  background: rgba(0,0,0,0.2);
+&#125;
+
+.play-btn &#123;
+  background: rgba(255,255,255,0.9);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #667eea;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+&#125;
+
+.play-btn:hover &#123;
+  background: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+&#125;
+
+/* 音乐控制面板 */
+.music-panel &#123;
+  position: fixed;
+  width: 280px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+  z-index: 9998;
+  overflow: hidden;
+  pointer-events: none;
+  max-height: 350px;
+  display: flex;
+  flex-direction: column;
+&#125;
+
+.music-panel.show &#123;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+&#125;
+
+/* 播放列表 */
+.playlist-section &#123;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-bottom: 1px solid #f0f0f0;
+&#125;
+
+.playlist-header &#123;
+  padding: 12px 15px 8px 15px;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  flex-shrink: 0;
+&#125;
+
+.playlist-title &#123;
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+  margin: 0;
+&#125;
+
+.playlist-items &#123;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 10px 10px 10px;
+  max-height: 180px;
+&#125;
+
+.playlist-items &#123;
+  overscroll-behavior: contain;
+&#125;
+
+.playlist-items::-webkit-scrollbar &#123;
+  width: 6px;
+&#125;
+
+.playlist-items::-webkit-scrollbar-track &#123;
+  background: #f5f5f5;
+  border-radius: 3px;
+&#125;
+
+.playlist-items::-webkit-scrollbar-thumb &#123;
+  background: #ccc;
+  border-radius: 3px;
+&#125;
+
+.playlist-items::-webkit-scrollbar-thumb:hover &#123;
+  background: #999;
+&#125;
+
+.playlist-item &#123;
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 2px;
+  min-height: 36px;
+  user-select: none;
+&#125;
+
+.playlist-item:hover &#123;
+  background: #f8f9fa;
+&#125;
+
+.playlist-item.active &#123;
+  background: #e6f7ff;
+  color: #1890ff;
+&#125;
+
+.playlist-num &#123;
+  width: 18px;
+  height: 18px;
+  background: #f5f5f5;
+  color: #666;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 500;
+  margin-right: 8px;
+  flex-shrink: 0;
+&#125;
+
+.playlist-item.active .playlist-num &#123;
+  background: #1890ff;
+  color: white;
+&#125;
+
+.playlist-info &#123;
+  flex: 1;
+  min-width: 0;
+  margin-right: 5px;
+&#125;
+
+.playlist-track &#123;
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+&#125;
+
+.playlist-artist &#123;
+  font-size: 10px;
+  color: #999;
+  margin-top: 1px;
+  line-height: 1.2;
+&#125;
+
+.playlist-duration &#123;
+  font-size: 10px;
+  color: #999;
+  flex-shrink: 0;
+&#125;
+
+/* 控制栏 */
+.controls-section &#123;
+  padding: 12px 15px;
+  background: #fafafa;
+  flex-shrink: 0;
+  border-top: 1px solid #eee;
+&#125;
+
+/* 当前播放信息 */
+.current-track &#123;
+  margin-bottom: 10px;
+  text-align: center;
+&#125;
+
+.track-name &#123;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+&#125;
+
+.track-artist &#123;
+  font-size: 11px;
+  color: #666;
+  line-height: 1.2;
+&#125;
+
+/* 控制按钮组 */
+.controls-group &#123;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+&#125;
+
+.control-btn &#123;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: white;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+&#125;
+
+.control-btn:hover &#123;
+  background: #667eea;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.4);
+&#125;
+
+.control-btn.main &#123;
+  width: 36px;
+  height: 36px;
+  font-size: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+&#125;
+
+.control-btn.main:hover &#123;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+&#125;
+
+/* 进度条 */
+.progress-container &#123;
+  margin-top: 8px;
+  position: relative;
+&#125;
+
+.progress-bar &#123;
+  height: 4px;
+  background: #e8e8e8;
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  touch-action: none;
+&#125;
+
+.progress &#123;
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  width: 0%;
+  border-radius: 2px;
+  position: relative;
+  transition: width 0.1s linear;
+  pointer-events: none;
+&#125;
+
+/* 进度条拖拽点 */
+.progress::after &#123;
+  content: &#x27;&#x27;;
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  background: white;
+  border: 2px solid #667eea;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  pointer-events: none;
+&#125;
+
+.progress-bar:hover .progress::after,
+.progress-bar.dragging .progress::after &#123;
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+&#125;
+
+.time-info &#123;
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #999;
+  margin-top: 4px;
+  user-select: none;
+&#125;
+
+/* 播放模式指示器 */
+.play-mode-indicator &#123;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background: #667eea;
+  transition: background 0.3s ease;
+  flex-shrink: 0;
+&#125;
+
+.play-mode-indicator.list &#123; background: #667eea; &#125;
+.play-mode-indicator.random &#123; background: #f5222d; &#125;
+&lt;/style&gt;
+
+&lt;script&gt;
+// 等待页面加载完成后初始化播放器
+document.addEventListener(&#x27;DOMContentLoaded&#x27;, function() &#123;
+  // 检查是否已经存在播放器容器
+  if (document.querySelector(&#x27;.music-player-container&#x27;)) &#123;
+    console.log(&#x27;音乐播放器已存在&#x27;);
+    return;
+  &#125;
+  
+  // 自动计算正确的路径
+  function getCorrectPath(relativePath) &#123;
+    const currentPath = window.location.pathname;
+    const currentUrl = window.location.href;
+    
+    // 如果当前页面是 _posts 目录下的文章页面
+    if (currentPath.includes(&#x27;/_posts/&#x27;) || currentPath.includes(&#x27;/categories/&#x27;) || 
+        currentPath.includes(&#x27;/tags/&#x27;) || currentPath.includes(&#x27;/about/&#x27;)) &#123;
+      // 这些页面在 source 目录下，需要返回上级目录
+      return &#x27;../&#x27; + relativePath;
+    &#125;
+    
+    // 如果是文章详情页（通常是 /年/月/日/文章名/ 格式）
+    const pathParts = currentPath.split(&#x27;/&#x27;).filter(p =&gt; p);
+    if (pathParts.length &gt;= 4 &amp;&amp; /^\d&#123;4&#125;$/.test(pathParts[0]) &amp;&amp; /^\d&#123;2&#125;$/.test(pathParts[1])) &#123;
+      // 计算需要返回多少级目录才能到 source 目录
+      const levelsUp = pathParts.length;
+      return &#x27;../&#x27;.repeat(levelsUp) + relativePath;
+    &#125;
+    
+    // 主页或其他页面，使用相对路径
+    return relativePath;
+  &#125;
+  
+  // 创建播放器容器
+  const container = document.createElement(&#x27;div&#x27;);
+  container.className = &#x27;music-player-container&#x27;;
+  container.innerHTML = `
+    &lt;!-- 圆形音乐封面 --&gt;
+    &lt;div class=&quot;music-avatar&quot; id=&quot;music-avatar&quot;&gt;
+      &lt;img src=&quot;$&#123;getCorrectPath(&#x27;music-cover/Undying Macula.jpg&#x27;)&#125;&quot; alt=&quot;专辑封面&quot; class=&quot;music-avatar-img&quot; id=&quot;avatar-img&quot; onerror=&quot;this.src=&#x27;data:image/svg+xml,&lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; width=\&quot;80\&quot; height=\&quot;80\&quot; viewBox=\&quot;0 0 24 24\&quot;&gt;&lt;rect width=\&quot;24\&quot; height=\&quot;24\&quot; fill=\&quot;%23667eea\&quot;/&gt;&lt;text x=\&quot;12\&quot; y=\&quot;16\&quot; font-family=\&quot;Arial\&quot; font-size=\&quot;12\&quot; fill=\&quot;white\&quot; text-anchor=\&quot;middle\&quot;&gt;Music&lt;/text&gt;&lt;/svg&gt;&#x27;&quot;&gt;
+      &lt;div class=&quot;play-overlay&quot;&gt;
+        &lt;button class=&quot;play-btn&quot; id=&quot;avatar-play-btn&quot; title=&quot;播放/暂停&quot;&gt;
+          &lt;i class=&quot;fa fa-play&quot; id=&quot;avatar-play-icon&quot;&gt;&lt;/i&gt;
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- 音乐控制面板 --&gt;
+    &lt;div class=&quot;music-panel&quot; id=&quot;music-panel&quot;&gt;
+      &lt;!-- 播放列表 --&gt;
+      &lt;div class=&quot;playlist-section&quot;&gt;
+        &lt;div class=&quot;playlist-header&quot;&gt;
+          &lt;div class=&quot;playlist-title&quot;&gt;播放列表&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;playlist-items&quot; id=&quot;playlist&quot;&gt;
+          &lt;!-- 播放列表项将通过JavaScript动态生成 --&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;!-- 控制栏 --&gt;
+      &lt;div class=&quot;controls-section&quot;&gt;
+        &lt;!-- 当前播放信息 --&gt;
+        &lt;div class=&quot;current-track&quot;&gt;
+          &lt;div class=&quot;track-name&quot; id=&quot;current-track-name&quot;&gt;Undying Macula&lt;/div&gt;
+          &lt;div class=&quot;track-artist&quot; id=&quot;current-track-artist&quot;&gt;Ashrount&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- 进度条 --&gt;
+        &lt;div class=&quot;progress-container&quot;&gt;
+          &lt;div class=&quot;progress-bar&quot; id=&quot;progress-bar&quot;&gt;
+            &lt;div class=&quot;progress&quot; id=&quot;progress&quot;&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;time-info&quot;&gt;
+            &lt;span id=&quot;current-time&quot;&gt;00:00&lt;/span&gt;
+            &lt;span id=&quot;total-time&quot;&gt;02:43&lt;/span&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- 控制按钮 --&gt;
+        &lt;div class=&quot;controls-group&quot;&gt;
+          &lt;button class=&quot;control-btn&quot; id=&quot;mode-btn&quot; title=&quot;播放模式&quot;&gt;
+            &lt;i class=&quot;fa fa-random&quot; id=&quot;mode-icon&quot;&gt;&lt;/i&gt;
+          &lt;/button&gt;
+          &lt;button class=&quot;control-btn&quot; id=&quot;prev-btn&quot; title=&quot;上一首&quot;&gt;
+            &lt;i class=&quot;fa fa-step-backward&quot;&gt;&lt;/i&gt;
+          &lt;/button&gt;
+          &lt;button class=&quot;control-btn main&quot; id=&quot;main-play-btn&quot; title=&quot;播放/暂停&quot;&gt;
+            &lt;i class=&quot;fa fa-play&quot; id=&quot;main-play-icon&quot;&gt;&lt;/i&gt;
+          &lt;/button&gt;
+          &lt;button class=&quot;control-btn&quot; id=&quot;next-btn&quot; title=&quot;下一首&quot;&gt;
+            &lt;i class=&quot;fa fa-step-forward&quot;&gt;&lt;/i&gt;
+          &lt;/button&gt;
+          &lt;div class=&quot;play-mode-indicator&quot; id=&quot;play-mode-indicator&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `;
+  
+  // 插入到body末尾
+  document.body.appendChild(container);
+  
+  // 初始化播放器
+  initMusicPlayer();
+&#125;);
+
+// 全局变量
+let ap = null;
+let isPlaying = false;
+let currentVolume = 0.7;
+let playMode = &#x27;list&#x27;; // 只有 &#x27;list&#x27; 和 &#x27;random&#x27; 两种模式
+let panelTimeout = null;
+let isPanelVisible = false;
+let isSeeking = false;
+let isDraggingProgress = false;
+let lastRandomIndex = -1;
+let currentTrackIndex = 0;
+
+// 自动计算当前页面的基础路径
+function getBasePath() &#123;
+  const currentPath = window.location.pathname;
+  const currentUrl = window.location.href;
+  
+  // 如果当前页面是 _posts 目录下的文章页面
+  if (currentPath.includes(&#x27;/_posts/&#x27;) || currentPath.includes(&#x27;/categories/&#x27;) || 
+      currentPath.includes(&#x27;/tags/&#x27;) || currentPath.includes(&#x27;/about/&#x27;)) &#123;
+    // 这些页面在 source 目录下，需要返回上级目录
+    return &#x27;../&#x27;;
+  &#125;
+  
+  // 如果是文章详情页（Hexo格式：/年/月/日/文章名/）
+  const pathParts = currentPath.split(&#x27;/&#x27;).filter(p =&gt; p);
+  if (pathParts.length &gt;= 4 &amp;&amp; /^\d&#123;4&#125;$/.test(pathParts[0]) &amp;&amp; /^\d&#123;2&#125;$/.test(pathParts[1])) &#123;
+    // 计算需要返回多少级目录才能到根目录
+    const levelsUp = pathParts.length;
+    return &#x27;../&#x27;.repeat(levelsUp);
+  &#125;
+  
+  // 主页或其他页面，使用相对路径
+  return &#x27;./&#x27;;
+&#125;
+
+// 音乐列表 - 使用动态路径
+const musicList = [
+  &#123;
+    name: &#x27;Undying Macula&#x27;,
+    artist: &#x27;Ashrount&#x27;,
+    url: &#x27;music/Undying Macula.mp3&#x27;,
+    cover: &#x27;music-cover/Undying Macula.jpg&#x27;,
+    duration: &#x27;02:43&#x27;,
+  &#125;,
+  &#123;
+    name: &#x27;AFTER PANDORA&#x27;,
+    artist: &#x27;削除&#x27;,
+    url: &#x27;music/AFTER PANDORA.mp3&#x27;,
+    cover: &#x27;music-cover/AFTER PANDORA.png&#x27;,
+    duration: &#x27;04:06&#x27;,
+  &#125;,
+  &#123;
+    name: &#x27;Androgynos (Full Phase)&#x27;,
+    artist: &#x27;BlackY&#x27;,
+    url: &#x27;music/Androgynos (Full Phase).mp3&#x27;,
+    cover: &#x27;music-cover/Androgynos (Full Phase).jpg&#x27;,
+    duration: &#x27;04:56&#x27;,
+  &#125;,
+  &#123;
+    name: &#x27;Immutable&#x27;,
+    artist: &#x27;Juggernaut.&#x27;,
+    url: &#x27;music/Immutable.mp3&#x27;,
+    cover: &#x27;music-cover/Immutable.png&#x27;,
+    duration: &#x27;05:25&#x27;,
+  &#125;,
+];
+
+function initMusicPlayer() &#123;
+  // 创建隐藏的 APlayer 容器
+  const playerContainer = document.createElement(&#x27;div&#x27;);
+  playerContainer.id = &#x27;aplayer-hidden-container&#x27;;
+  playerContainer.style.display = &#x27;none&#x27;;
+  document.body.appendChild(playerContainer);
+  
+  // 获取基础路径
+  const basePath = getBasePath();
+  
+  // 修正音乐文件路径
+  const correctedMusicList = musicList.map(track =&gt; &#123;
+    return &#123;
+      ...track,
+      url: basePath + track.url,
+      cover: basePath + track.cover
+    &#125;;
+  &#125;);
+  
+  // 简化：始终使用列表循环
+  ap = new APlayer(&#123;
+    container: document.getElementById(&#x27;aplayer-hidden-container&#x27;),
+    audio: correctedMusicList,
+    theme: &#x27;#667eea&#x27;,
+    loop: &#x27;all&#x27;, // 始终使用全部循环
+    order: &#x27;list&#x27;,
+    preload: &#x27;auto&#x27;,
+    volume: currentVolume,
+    mutex: true,
+    lrcType: 0,
+    fixed: false,
+    mini: false,
+    autoplay: false,
+    controls: false
+  &#125;);
+  
+  // 事件监听
+  ap.on(&#x27;play&#x27;, () =&gt; &#123;
+    isPlaying = true;
+    updatePlayButton();
+    updateAvatarPlayButton();
+  &#125;);
+
+  ap.on(&#x27;pause&#x27;, () =&gt; &#123;
+    isPlaying = false;
+    updatePlayButton();
+    updateAvatarPlayButton();
+  &#125;);
+
+  ap.on(&#x27;canplay&#x27;, () =&gt; &#123;
+    updateTrackInfo();
+  &#125;);
+  
+  // 监听 timeupdate 更新进度
+  ap.on(&#x27;timeupdate&#x27;, () =&gt; &#123;
+    if (!isSeeking &amp;&amp; !isDraggingProgress) &#123;
+      updateProgress();
+    &#125;
+  &#125;);
+  
+  ap.on(&#x27;loadedmetadata&#x27;, () =&gt; &#123;
+    updateProgress();
+    const totalTime = document.getElementById(&#x27;total-time&#x27;);
+    if (ap.audio.duration &amp;&amp; !isNaN(ap.audio.duration)) &#123;
+      totalTime.textContent = formatTime(ap.audio.duration);
+    &#125;
+  &#125;);
+  
+  // 监听歌曲切换
+  ap.on(&#x27;listswitch&#x27;, (index) =&gt; &#123;
+    currentTrackIndex = index.item;
+    updateTrackInfo();
+    updateActivePlaylistItem(index.item);
+  &#125;);
+  
+  // 初始化 UI
+  renderPlaylist();
+  setupEventListeners();
+  positionPanel();
+  updatePlayModeUI();
+  hidePanel();
+&#125;
+
+function setupEventListeners() &#123;
+  const avatar = document.getElementById(&#x27;music-avatar&#x27;);
+  const panel = document.getElementById(&#x27;music-panel&#x27;);
+  const progressBar = document.getElementById(&#x27;progress-bar&#x27;);
+  const playlistItems = document.getElementById(&#x27;playlist&#x27;);
+  const avatarBtn = document.getElementById(&#x27;avatar-play-btn&#x27;);
+  const modeBtn = document.getElementById(&#x27;mode-btn&#x27;);
+  const prevBtn = document.getElementById(&#x27;prev-btn&#x27;);
+  const mainBtn = document.getElementById(&#x27;main-play-btn&#x27;);
+  const nextBtn = document.getElementById(&#x27;next-btn&#x27;);
+
+  if (!avatar || !panel || !progressBar) &#123;
+    console.error(&#x27;播放器元素未找到&#x27;);
+    return;
+  &#125;
+
+  // 滚动传递问题
+  playlistItems.addEventListener(&#x27;wheel&#x27;, function(e) &#123;
+    const isAtBottom = this.scrollHeight - this.scrollTop &lt;= this.clientHeight + 1;
+    const isAtTop = this.scrollTop === 0;
+    
+    if (isAtBottom &amp;&amp; e.deltaY &gt; 0) &#123;
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    &#125;
+    
+    if (isAtTop &amp;&amp; e.deltaY &lt; 0) &#123;
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    &#125;
+    
+    e.stopPropagation();
+  &#125;, &#123; passive: false &#125;);
+
+  // 封面鼠标事件
+  avatar.addEventListener(&#x27;mouseenter&#x27;, function(e) &#123;
+    e.stopPropagation();
+    showPanel();
+  &#125;);
+
+  avatar.addEventListener(&#x27;mouseleave&#x27;, function(e) &#123;
+    e.stopPropagation();
+    if (!isPanelVisible) &#123;
+      hidePanel();
+    &#125;
+  &#125;);
+
+  // 进度条事件处理
+  progressBar.addEventListener(&#x27;mousedown&#x27;, function(e) &#123;
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!ap.audio || !ap.audio.duration) return;
+    
+    isDraggingProgress = true;
+    progressBar.classList.add(&#x27;dragging&#x27;);
+    isSeeking = true;
+    
+    const rect = progressBar.getBoundingClientRect();
+    const x = e.clientX;
+    const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+    
+    updateProgressDisplay(percent);
+    
+    document.addEventListener(&#x27;mousemove&#x27;, handleProgressDragMove);
+    document.addEventListener(&#x27;mouseup&#x27;, handleProgressDragEnd);
+  &#125;);
+
+  progressBar.addEventListener(&#x27;click&#x27;, function(e) &#123;
+    e.stopPropagation();
+    
+    if (!ap.audio || !ap.audio.duration) return;
+    
+    const rect = progressBar.getBoundingClientRect();
+    const x = e.clientX;
+    const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+    const targetTime = percent * ap.audio.duration;
+    
+    isSeeking = true;
+    ap.seek(targetTime);
+    updateProgressDisplay(percent);
+    
+    if (isPlaying) &#123;
+      setTimeout(() =&gt; &#123;
+        ap.play();
+      &#125;, 10);
+    &#125;
+    
+    setTimeout(() =&gt; &#123;
+      isSeeking = false;
+    &#125;, 100);
+  &#125;);
+
+  // 按钮事件
+  avatarBtn.addEventListener(&#x27;click&#x27;, function(e) &#123;
+    e.stopPropagation();
+    togglePlayPause();
+  &#125;);
+
+  modeBtn.addEventListener(&#x27;click&#x27;, function(e) &#123;
+    e.stopPropagation();
+    changePlayMode();
+  &#125;);
+
+  prevBtn.addEventListener(&#x27;click&#x27;, function(e) &#123;
+    e.stopPropagation();
+    previousTrack();
+  &#125;);
+
+  mainBtn.addEventListener(&#x27;click&#x27;, function(e) &#123;
+    e.stopPropagation();
+    togglePlayPause();
+  &#125;);
+
+  nextBtn.addEventListener(&#x27;click&#x27;, function(e) &#123;
+    e.stopPropagation();
+    nextTrack();
+  &#125;);
+
+  // 面板鼠标事件
+  panel.addEventListener(&#x27;mouseenter&#x27;, function(e) &#123;
+    e.stopPropagation();
+    isPanelVisible = true;
+    if (panelTimeout) &#123;
+      clearTimeout(panelTimeout);
+    &#125;
+  &#125;);
+
+  panel.addEventListener(&#x27;mouseleave&#x27;, function(e) &#123;
+    e.stopPropagation();
+    isPanelVisible = false;
+    panelTimeout = setTimeout(hidePanel, 300);
+  &#125;);
+
+  window.addEventListener(&#x27;scroll&#x27;, positionPanel);
+  window.addEventListener(&#x27;resize&#x27;, positionPanel);
+  
+  document.addEventListener(&#x27;click&#x27;, function(e) &#123;
+    const avatar = document.getElementById(&#x27;music-avatar&#x27;);
+    const panel = document.getElementById(&#x27;music-panel&#x27;);
+    if (!avatar.contains(e.target) &amp;&amp; !panel.contains(e.target)) &#123;
+      hidePanel();
+    &#125;
+  &#125;);
+&#125;
+
+// 进度条拖拽移动
+function handleProgressDragMove(e) &#123;
+  if (!isDraggingProgress || !ap.audio || !ap.audio.duration) return;
+  
+  e.preventDefault();
+  e.stopPropagation();
+  
+  const progressBar = document.getElementById(&#x27;progress-bar&#x27;);
+  const rect = progressBar.getBoundingClientRect();
+  const x = e.clientX;
+  const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+  
+  updateProgressDisplay(percent);
+&#125;
+
+// 进度条拖拽结束
+function handleProgressDragEnd(e) &#123;
+  if (!isDraggingProgress || !ap.audio || !ap.audio.duration) return;
+  
+  e.preventDefault();
+  e.stopPropagation();
+  
+  isDraggingProgress = false;
+  const progressBar = document.getElementById(&#x27;progress-bar&#x27;);
+  progressBar.classList.remove(&#x27;dragging&#x27;);
+  
+  const rect = progressBar.getBoundingClientRect();
+  const x = e.clientX;
+  const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+  const targetTime = percent * ap.audio.duration;
+  
+  ap.seek(targetTime);
+  
+  if (isPlaying) &#123;
+    ap.pause();
+    setTimeout(() =&gt; &#123;
+      ap.play();
+    &#125;, 10);
+  &#125;
+  
+  updateProgressDisplay(percent);
+  
+  document.removeEventListener(&#x27;mousemove&#x27;, handleProgressDragMove);
+  document.removeEventListener(&#x27;mouseup&#x27;, handleProgressDragEnd);
+  
+  setTimeout(() =&gt; &#123;
+    isSeeking = false;
+  &#125;, 100);
+&#125;
+
+function updateProgressDisplay(percent) &#123;
+  const progress = document.getElementById(&#x27;progress&#x27;);
+  const currentTimeEl = document.getElementById(&#x27;current-time&#x27;);
+  
+  if (progress) &#123;
+    progress.style.width = `$&#123;percent * 100&#125;%`;
+  &#125;
+  
+  if (currentTimeEl &amp;&amp; ap.audio &amp;&amp; ap.audio.duration) &#123;
+    const targetTime = percent * ap.audio.duration;
+    currentTimeEl.textContent = formatTime(targetTime);
+  &#125;
+&#125;
+
+function updateProgress() &#123;
+  if (!ap.audio || !ap.audio.duration || isNaN(ap.audio.duration) || isSeeking || isDraggingProgress) &#123;
+    return;
+  &#125;
+  
+  const currentTime = ap.audio.currentTime || 0;
+  const duration = ap.audio.duration || 0;
+  const percent = duration &gt; 0 ? (currentTime / duration) * 100 : 0;
+  
+  const progress = document.getElementById(&#x27;progress&#x27;);
+  if (progress) &#123;
+    progress.style.width = `$&#123;percent&#125;%`;
+  &#125;
+  
+  const currentTimeEl = document.getElementById(&#x27;current-time&#x27;);
+  if (currentTimeEl) currentTimeEl.textContent = formatTime(currentTime);
+&#125;
+
+function showPanel() &#123;
+  const panel = document.getElementById(&#x27;music-panel&#x27;);
+  if (panel) &#123;
+    panel.classList.add(&#x27;show&#x27;);
+    positionPanel();
+    isPanelVisible = true;
+    
+    if (panelTimeout) &#123;
+      clearTimeout(panelTimeout);
+    &#125;
+  &#125;
+&#125;
+
+function hidePanel() &#123;
+  const panel = document.getElementById(&#x27;music-panel&#x27;);
+  if (panel) &#123;
+    panel.classList.remove(&#x27;show&#x27;);
+    isPanelVisible = false;
+  &#125;
+&#125;
+
+function positionPanel() &#123;
+  const avatar = document.getElementById(&#x27;music-avatar&#x27;);
+  const panel = document.getElementById(&#x27;music-panel&#x27;);
+  if (!avatar || !panel) return;
+  
+  const avatarRect = avatar.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const panelWidth = 280;
+  const panelHeight = 320;
+  
+  let left = avatarRect.right + 10;
+  let top = avatarRect.top;
+  
+  if (left + panelWidth &gt; viewportWidth - 20) &#123;
+    left = avatarRect.left - panelWidth - 10;
+  &#125;
+  
+  if (left &lt; 20) &#123;
+    left = 20;
+  &#125;
+  
+  if (top + panelHeight &gt; viewportHeight - 20) &#123;
+    top = viewportHeight - panelHeight - 20;
+  &#125;
+  
+  if (top &lt; 20) &#123;
+    top = 20;
+  &#125;
+  
+  panel.style.left = left + &#x27;px&#x27;;
+  panel.style.top = top + &#x27;px&#x27;;
+&#125;
+
+function renderPlaylist() &#123;
+  const playlistEl = document.getElementById(&#x27;playlist&#x27;);
+  if (!playlistEl) return;
+  
+  playlistEl.innerHTML = &#x27;&#x27;;
+  
+  const basePath = getBasePath();
+  const correctedMusicList = musicList.map(track =&gt; (&#123;
+    ...track,
+    url: basePath + track.url,
+    cover: basePath + track.cover
+  &#125;));
+  
+  correctedMusicList.forEach((track, index) =&gt; &#123;
+    const item = document.createElement(&#x27;div&#x27;);
+    item.className = &#x27;playlist-item&#x27;;
+    if (index === 0) item.classList.add(&#x27;active&#x27;);
+    item.innerHTML = `
+      &lt;div class=&quot;playlist-num&quot;&gt;$&#123;index + 1&#125;&lt;/div&gt;
+      &lt;div class=&quot;playlist-info&quot;&gt;
+        &lt;div class=&quot;playlist-track&quot;&gt;$&#123;track.name&#125;&lt;/div&gt;
+        &lt;div class=&quot;playlist-artist&quot;&gt;$&#123;track.artist&#125;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;playlist-duration&quot;&gt;$&#123;track.duration&#125;&lt;/div&gt;
+    `;
+    item.addEventListener(&#x27;click&#x27;, (e) =&gt; &#123;
+      e.stopPropagation();
+      playTrack(index);
+    &#125;);
+    playlistEl.appendChild(item);
+  &#125;);
+&#125;
+
+function playTrack(index) &#123;
+  currentTrackIndex = index;
+  
+  if (playMode === &#x27;random&#x27;) &#123;
+    lastRandomIndex = index;
+  &#125;
+  
+  ap.list.switch(index);
+  ap.play();
+  updateActivePlaylistItem(index);
+  updateTrackInfo();
+  showPanel();
+&#125;
+
+function updateActivePlaylistItem(index) &#123;
+  document.querySelectorAll(&#x27;.playlist-item&#x27;).forEach((item, i) =&gt; &#123;
+    item.classList.toggle(&#x27;active&#x27;, i === index);
+  &#125;);
+&#125;
+
+function togglePlayPause() &#123;
+  if (isPlaying) &#123;
+    ap.pause();
+  &#125; else &#123;
+    ap.play();
+  &#125;
+  showPanel();
+&#125;
+
+function updatePlayButton() &#123;
+  const mainIcon = document.getElementById(&#x27;main-play-icon&#x27;);
+  const mainBtn = document.getElementById(&#x27;main-play-btn&#x27;);
+  if (isPlaying) &#123;
+    if (mainIcon) mainIcon.className = &#x27;fa fa-pause&#x27;;
+    if (mainBtn) mainBtn.title = &#x27;暂停&#x27;;
+  &#125; else &#123;
+    if (mainIcon) mainIcon.className = &#x27;fa fa-play&#x27;;
+    if (mainBtn) mainBtn.title = &#x27;播放&#x27;;
+  &#125;
+&#125;
+
+function updateAvatarPlayButton() &#123;
+  const avatarIcon = document.getElementById(&#x27;avatar-play-icon&#x27;);
+  const avatarBtn = document.getElementById(&#x27;avatar-play-btn&#x27;);
+  if (isPlaying) &#123;
+    if (avatarIcon) avatarIcon.className = &#x27;fa fa-pause&#x27;;
+    if (avatarBtn) avatarBtn.title = &#x27;暂停&#x27;;
+  &#125; else &#123;
+    if (avatarIcon) avatarIcon.className = &#x27;fa fa-play&#x27;;
+    if (avatarBtn) avatarBtn.title = &#x27;播放&#x27;;
+  &#125;
+&#125;
+
+function previousTrack() &#123;
+  if (playMode === &#x27;random&#x27;) &#123;
+    let randomIndex;
+    do &#123;
+      randomIndex = Math.floor(Math.random() * musicList.length);
+    &#125; while (musicList.length &gt; 1 &amp;&amp; randomIndex === lastRandomIndex);
+    
+    lastRandomIndex = randomIndex;
+    playTrack(randomIndex);
+  &#125; else &#123;
+    ap.skipBack();
+    if (!isPlaying) ap.play();
+  &#125;
+  updateTrackInfo();
+  showPanel();
+&#125;
+
+function nextTrack() &#123;
+  if (playMode === &#x27;random&#x27;) &#123;
+    let randomIndex;
+    do &#123;
+      randomIndex = Math.floor(Math.random() * musicList.length);
+    &#125; while (musicList.length &gt; 1 &amp;&amp; randomIndex === lastRandomIndex);
+    
+    lastRandomIndex = randomIndex;
+    playTrack(randomIndex);
+  &#125; else &#123;
+    ap.skipForward();
+    if (!isPlaying) ap.play();
+  &#125;
+  updateTrackInfo();
+  showPanel();
+&#125;
+
+function changePlayMode() &#123;
+  // 只有两种模式：列表循环和随机播放
+  const modes = [
+    &#123; id: &#x27;list&#x27;, name: &#x27;列表循环&#x27;, icon: &#x27;fa-list-ol&#x27; &#125;,
+    &#123; id: &#x27;random&#x27;, name: &#x27;随机播放&#x27;, icon: &#x27;fa-random&#x27; &#125;
+  ];
+  
+  const currentIndex = modes.findIndex(mode =&gt; mode.id === playMode);
+  const nextIndex = (currentIndex + 1) % modes.length;
+  playMode = modes[nextIndex].id;
+  
+  if (playMode === &#x27;random&#x27;) &#123;
+    // 初始化随机播放
+    lastRandomIndex = -1;
+  &#125;
+  
+  updatePlayModeUI();
+  showPanel();
+&#125;
+
+function updatePlayModeUI() &#123;
+  const modeBtn = document.getElementById(&#x27;mode-btn&#x27;);
+  const modeIcon = document.getElementById(&#x27;mode-icon&#x27;);
+  const indicator = document.getElementById(&#x27;play-mode-indicator&#x27;);
+  
+  let title = &#x27;&#x27;, icon = &#x27;&#x27;, indicatorClass = &#x27;&#x27;;
+  
+  if (playMode === &#x27;list&#x27;) &#123;
+    title = &#x27;列表循环&#x27;;
+    icon = &#x27;fa-list-ol&#x27;;
+    indicatorClass = &#x27;list&#x27;;
+  &#125; else if (playMode === &#x27;random&#x27;) &#123;
+    title = &#x27;随机播放&#x27;;
+    icon = &#x27;fa-random&#x27;;
+    indicatorClass = &#x27;random&#x27;;
+  &#125;
+  
+  if (modeBtn) modeBtn.title = title;
+  if (modeIcon) modeIcon.className = &#x27;fa &#x27; + icon;
+  if (indicator) indicator.className = &#x27;play-mode-indicator &#x27; + indicatorClass;
+&#125;
+
+function updateTrackInfo() &#123;
+  const basePath = getBasePath();
+  const correctedMusicList = musicList.map(track =&gt; (&#123;
+    ...track,
+    url: basePath + track.url,
+    cover: basePath + track.cover
+  &#125;));
+  
+  const current = correctedMusicList[ap.list.index];
+  if (!current) return;
+  
+  const trackName = document.getElementById(&#x27;current-track-name&#x27;);
+  const trackArtist = document.getElementById(&#x27;current-track-artist&#x27;);
+  const avatarImg = document.getElementById(&#x27;avatar-img&#x27;);
+  const totalTime = document.getElementById(&#x27;total-time&#x27;);
+  
+  if (trackName) trackName.textContent = current.name;
+  if (trackArtist) trackArtist.textContent = current.artist;
+  if (avatarImg) &#123;
+    avatarImg.src = current.cover;
+  &#125;
+  if (totalTime) totalTime.textContent = current.duration;
+  
+  updateActivePlaylistItem(ap.list.index);
+&#125;
+
+function formatTime(seconds) &#123;
+  if (isNaN(seconds) || seconds === 0) return &#x27;00:00&#x27;;
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `$&#123;mins.toString().padStart(2, &#x27;0&#x27;)&#125;:$&#123;secs.toString().padStart(2, &#x27;0&#x27;)&#125;`;
+&#125;
+&lt;/script&gt;
+
+&lt;!-- 引入 APlayer --&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css&quot;&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js&quot;&gt;&lt;/script&gt;</code></pre>
+
+<p>最后得到的结果就是现在右下角的那个小播放器了，然后要加自己的歌曲需要在音乐列表那里手动添加音乐信息，格式是相同的。音乐信息可以包含歌词文件，Aplayer是支持歌词功能的，但这里我没有调试，要添加歌词功能的可能还得让AI调试一下</p>
+<div align="center">
+  <img src="../image/post1/image.png" alt="效果展示" width="400">
+</div>
+
+<p>最后四连</p>
+<pre><code class="highlight plaintext">hexo clean &amp;&amp; hexo g &amp;&amp; hexo d &amp;&amp; hexo s</code></pre>
+
 <hr>
-<p>npm install hexo-tag-aplayer –save</p>
+<p><strong>注意：</strong></p>
+<p>因不明原因，在本地上部署的这个静态网站无法移动进度条，但是Github上的进度条功能正常</p>
 <hr>
-<p>然后在NexT的配置文件<code>_config.yml</code>中在最后一行输入以下配置信息</p>
-<hr>
-<p>aplayer:<br>  cdn: <a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js">https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js</a><br>  style_cdn: <a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css</a><br>  meting: true # 如果要使用 MetingJS</p>
-<hr>
-<h3 id="2-配置一个音乐播放器"><a href="#2-配置一个音乐播放器" class="headerlink" title="2. 配置一个音乐播放器"></a>2. 配置一个音乐播放器</h3><p>这一步比较麻烦</p>
+<p><strong>遇到的问题：</strong></p>
+<p>本来是想加一个单曲循环功能的，但是这个AI怎么都调试不好，无奈放弃了，你们可以试着调教一下</p>
 
       
     </div>
@@ -1448,14 +2606,14 @@ function formatTime(seconds) {
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">0k</span>
+    <span title="站点总字数">27k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1 分钟</span>
+    <span title="站点阅读时长">24 分钟</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
