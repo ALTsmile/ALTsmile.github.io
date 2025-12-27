@@ -12,24 +12,6 @@
 
 <link rel="stylesheet" href="/css/main.css">
 
-<!-- 添加代码高亮 CSS -->
-<% if (theme.highlight && theme.highlight.enable) { %>
-  <% if (theme.highlight.light) { %>
-    <link rel="stylesheet" href="<%= theme.highlight.light %>" media="(prefers-color-scheme: light)">
-  <% } %>
-  <% if (theme.highlight.dark) { %>
-    <link rel="stylesheet" href="<%= theme.highlight.dark %>" media="(prefers-color-scheme: dark)">
-  <% } %>
-<% } else { %>
-  <!-- 如果主题配置中没有高亮，使用默认 CDN -->
-  <link rel="stylesheet" 
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" 
-        media="(prefers-color-scheme: light)">
-  <link rel="stylesheet" 
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" 
-        media="(prefers-color-scheme: dark)">
-<% } %>
-
 
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
