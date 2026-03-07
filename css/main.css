@@ -1162,7 +1162,7 @@ pre code {
     transition: all 0.2s ease-in-out;
   }
   .links-of-author a::before {
-    background: #abffbb;
+    background: #adff7a;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -2724,4 +2724,169 @@ figcaption {
 /* 隐藏 SHIKI 语言标识 */
 .code-lang {
   display: none !important;
+}
+/* 代码块容器 */
+.shiki-container {
+  margin: 1.5em 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  background: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  transition: all 0.3s ease;
+}
+.shiki-container:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  border-color: #d1d9e0;
+}
+/* 代码块头部 */
+.shiki-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: #f0f2f5;
+  border-bottom: 1px solid #e1e4e8;
+  font-size: 12px;
+  font-weight: 500;
+  color: #586069;
+}
+.shiki-language {
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #0366d6;
+  background: rgba(3,102,214,0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(3,102,214,0.2);
+}
+/* 代码块主体 */
+.shiki-code-wrapper {
+  display: flex;
+  position: relative;
+  background: #fafbfc;
+  overflow-x: auto;
+}
+/* 行号区域 */
+.shiki-line-numbers {
+  padding: 12px 8px 12px 16px;
+  background: #f6f8fa;
+  border-right: 1px solid #e1e4e8;
+  text-align: right;
+  user-select: none;
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6a737d;
+  min-width: 40px;
+  flex-shrink: 0;
+}
+.line-number {
+  display: block;
+  padding: 0 4px;
+}
+/* 代码内容区域 */
+.shiki-content {
+  flex: 1;
+  overflow-x: auto;
+  padding: 12px 16px;
+  background: #fafbfc;
+}
+.shiki-content pre {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+  font-family: 'SF Mono', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+.shiki-content code {
+  display: block;
+  background: transparent !important;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: break-word;
+  -webkit-hyphens: none;
+  hyphens: none;
+  tab-size: 2;
+  -moz-tab-size: 2;
+  -o-tab-size: 2;
+  tab-size: 2;
+}
+/* 暗色主题适配 */
+[data-theme='dark'] .shiki-container {
+  background: #0d1117;
+  border-color: #30363d;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+[data-theme='dark'] .shiki-header {
+  background: #161b22;
+  border-bottom-color: #30363d;
+  color: #8b949e;
+}
+[data-theme='dark'] .shiki-language {
+  color: #58a6ff;
+  background: rgba(88,166,255,0.1);
+  border-color: rgba(88,166,255,0.2);
+}
+[data-theme='dark'] .shiki-line-numbers {
+  background: #161b22;
+  border-right-color: #30363d;
+  color: #6e7681;
+}
+[data-theme='dark'] .shiki-code-wrapper,
+[data-theme='dark'] .shiki-content {
+  background: #0d1117;
+}
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .shiki-container {
+    margin: 1em -16px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  .shiki-line-numbers {
+    min-width: 36px;
+    padding: 10px 6px 10px 12px;
+    font-size: 12px;
+  }
+  .shiki-content {
+    padding: 10px 12px;
+  }
+  .shiki-content pre,
+  .shiki-content code {
+    font-size: 12px !important;
+  }
+}
+/* 滚动条样式 */
+.shiki-code-wrapper::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.shiki-code-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+.shiki-code-wrapper::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+.shiki-code-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+[data-theme='dark'] .shiki-code-wrapper::-webkit-scrollbar-track {
+  background: #2d333b;
+}
+[data-theme='dark'] .shiki-code-wrapper::-webkit-scrollbar-thumb {
+  background: #484f58;
+}
+[data-theme='dark'] .shiki-code-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #5a636e;
 }
