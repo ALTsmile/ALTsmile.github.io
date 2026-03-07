@@ -1162,7 +1162,7 @@ pre code {
     transition: all 0.2s ease-in-out;
   }
   .links-of-author a::before {
-    background: #0dffff;
+    background: #81123c;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -2725,66 +2725,180 @@ figcaption {
 .code-lang {
   display: none !important;
 }
-/* 基础代码块样式 */
-.shiki-container {
-  margin: 20px 0;
-  border-radius: 6px;
+/* 代码块容器 */
+.codeblock-container {
+  margin: 1.5em 0;
+  border-radius: 8px;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   border: 1px solid #e1e4e8;
   background: #f6f8fa;
+  transition: all 0.3s ease;
+/* 适配 NexT 折叠功能 */
+/* 悬停效果 */
 }
-.shiki-container .shiki-header {
-  background: #f6f8fa;
-  padding: 8px 16px;
+.codeblock-container .codeblock {
+  margin: 0;
+}
+.codeblock-container .codeblock .codeblock-header {
+  padding: 10px 16px;
+  background: #f0f2f5;
   border-bottom: 1px solid #e1e4e8;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: #24292e;
+  color: #586069;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.shiki-container .shiki-header .shiki-lang {
+.codeblock-container .codeblock .codeblock-header .codeblock-lang {
+  font-family: 'SF Mono', Consolas, Monaco, 'Andale Mono', monospace;
+  font-size: 12px;
   color: #0366d6;
   background: rgba(3,102,214,0.1);
-  padding: 3px 8px;
-  border-radius: 3px;
-  font-size: 11px;
-  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
 }
-.shiki-container .shiki-body {
-  display: flex;
-  background: #fff;
+.codeblock-container .codeblock .codeblock-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
 }
-.shiki-container .shiki-body .shiki-line-numbers {
+.codeblock-container .codeblock .codeblock-content table tbody tr td {
+  vertical-align: top;
+  padding: 0;
+}
+.codeblock-container .codeblock .codeblock-content table tbody tr td.codeblock-linenos {
   background: #f6f8fa;
   border-right: 1px solid #e1e4e8;
-  padding: 16px 8px;
   text-align: right;
-  color: #6a737d;
-  user-select: none;
+  padding: 12px 8px;
+  width: 40px;
   min-width: 40px;
+  user-select: none;
 }
-.shiki-container .shiki-body .shiki-line-numbers .line-number {
+.codeblock-container .codeblock .codeblock-content table tbody tr td.codeblock-linenos .linenodiv {
+  font-family: 'SF Mono', Consolas, Monaco, 'Andale Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6a737d;
+}
+.codeblock-container .codeblock .codeblock-content table tbody tr td.codeblock-linenos .linenodiv .line-number {
   display: block;
   line-height: 1.5;
-  font-size: 13px;
 }
-.shiki-container .shiki-body .shiki-code {
-  flex: 1;
-  padding: 16px;
+.codeblock-container .codeblock .codeblock-content table tbody tr td.codeblock-code {
+  padding: 12px 16px;
+  background: #fafbfc;
   overflow-x: auto;
+  min-width: 0;
 }
-.shiki-container .shiki-body .shiki-code pre {
+.codeblock-container .codeblock .codeblock-content table tbody tr td.codeblock-code pre {
   margin: 0;
   padding: 0;
   background: transparent;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 13px;
+  font-family: 'SF Mono', Consolas, Monaco, 'Andale Mono', monospace;
+  font-size: 14px /* 增大字号 */;
   line-height: 1.5;
 }
-.shiki-container .shiki-body .shiki-code pre code {
-  display: block;
+.codeblock-container .codeblock .codeblock-content table tbody tr td.codeblock-code pre code {
+  font-size: 14px;
+  line-height: 1.5;
   background: transparent;
   padding: 0;
-  font-size: inherit;
-  line-height: inherit;
-  color: inherit;
+  color: #24292e;
+}
+.codeblock-container:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  border-color: #d1d9e0;
+}
+/* 适配 NexT 折叠动画 */
+.codeblock-content {
+  max-height: 400px;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.codeblock-content.folded {
+  max-height: 400px;
+  overflow: hidden;
+}
+/* 增强代码语法高亮 */
+.highlight .keyword,
+.highlight .selector-tag,
+.highlight .literal,
+.highlight .title,
+.highlight .section,
+.highlight .doctag,
+.highlight .name,
+.highlight .strong {
+  color: #d73a49;
+  font-weight: 600;
+}
+.highlight .comment,
+.highlight .quote {
+  color: #6a737d;
+  font-style: italic;
+}
+.highlight .string,
+.highlight .regexp,
+.highlight .attribute,
+.highlight .meta-string,
+.highlight .symbol,
+.highlight .bullet,
+.highlight .link,
+.highlight .meta,
+.highlight .subst,
+.highlight .addition,
+.highlight .template-variable,
+.highlight .variable {
+  color: #032f62;
+}
+.highlight .number,
+.highlight .built_in,
+.highlight .builtin-name,
+.highlight .type,
+.highlight .params,
+.highlight .meta-keyword,
+.highlight .deletion {
+  color: #005cc5;
+}
+.highlight .function,
+.highlight .class-title {
+  color: #6f42c1;
+}
+.highlight .property,
+.highlight .tag,
+.highlight .selector-id,
+.highlight .selector-class,
+.highlight .selector-attr,
+.highlight .selector-pseudo,
+.highlight .attribute {
+  color: #22863a;
+}
+/* 暗色主题适配 */
+[data-theme='dark'] .codeblock-container {
+  background: #0d1117;
+  border-color: #30363d;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+[data-theme='dark'] .codeblock-container .codeblock-header {
+  background: #161b22;
+  border-bottom-color: #30363d;
+  color: #8b949e;
+}
+[data-theme='dark'] .codeblock-container .codeblock-header .codeblock-lang {
+  color: #58a6ff;
+  background: rgba(88,166,255,0.1);
+}
+[data-theme='dark'] .codeblock-container .codeblock-content td.codeblock-linenos {
+  background: #161b22;
+  border-right-color: #30363d;
+  color: #6e7681;
+}
+[data-theme='dark'] .codeblock-container .codeblock-content td.codeblock-code {
+  background: #0d1117;
+}
+[data-theme='dark'] .codeblock-container .codeblock-content td.codeblock-code pre code {
+  color: #c9d1d9;
 }
