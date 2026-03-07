@@ -1447,7 +1447,7 @@ document.addEventListener('page:loaded', () => {
 <!-- hexo injector body_end start -->
 <script>
 // 复制代码功能
-function copyCode(blockId) {
+function shikiCopyCode(blockId) {
   const container = document.getElementById(blockId);
   if (!container) return;
   
@@ -1475,39 +1475,50 @@ function copyCode(blockId) {
 }
 
 // 折叠/展开功能
-function toggleCodeBlock(blockId) {
+function shikiToggleCode(blockId) {
   const container = document.getElementById(blockId);
   if (!container) return;
   
-  const isFolded = container.classList.contains('folded');
+  const isFolded = container.classList.contains('shiki-folded');
   const body = container.querySelector('.shiki-body');
   const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
+  const lineHeight = 24; // 与CSS中的line-height一致
   
   if (isFolded) {
-    // 展开
-    container.classList.remove('folded');
-    const estimatedHeight = (lineCount * 20) + 60; // 20px 每行 + 60px 头部
-    body.style.maxHeight = estimatedHeight + 'px';
+    // 展开全部
+    container.classList.remove('shiki-folded');
+    const fullHeight = (lineCount * lineHeight) + 40; // 加上padding
+    body.style.maxHeight = fullHeight + 'px';
   } else {
-    // 折叠
-    container.classList.add('folded');
-    body.style.maxHeight = '0';
+    // 折叠到6行
+    container.classList.add('shiki-folded');
+    const foldedHeight = Math.min(lineCount, 6) * lineHeight + 40;
+    body.style.maxHeight = foldedHeight + 'px';
   }
 }
 
 // 页面加载后初始化
 document.addEventListener('DOMContentLoaded', function() {
   // 为所有代码块设置初始高度
-  const codeContainers = document.querySelectorAll('.shiki-code-container:not(.folded)');
+  const codeContainers = document.querySelectorAll('.shiki-code-container');
   
   codeContainers.forEach(container => {
     const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
     const body = container.querySelector('.shiki-body');
+    const isFolded = container.classList.contains('shiki-folded');
+    const lineHeight = 24;
     
     if (body && lineCount > 0) {
-      const estimatedHeight = (lineCount * 20) + 60;
-      body.style.maxHeight = estimatedHeight + 'px';
-      body.style.transition = 'max-height 0.3s ease';
+      if (isFolded) {
+        // 折叠状态：显示6行
+        const foldedHeight = Math.min(lineCount, 6) * lineHeight + 40;
+        body.style.maxHeight = foldedHeight + 'px';
+      } else {
+        // 展开状态
+        const fullHeight = (lineCount * lineHeight) + 40;
+        body.style.maxHeight = fullHeight + 'px';
+      }
+      body.style.transition = 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
     }
   });
   
@@ -1519,7 +1530,7 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const container = focused.closest('.shiki-code-container');
         if (container && container.id) {
-          copyCode(container.id);
+          shikiCopyCode(container.id);
         }
       }
     }
