@@ -18,25 +18,28 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.31/fancybox/fancybox.css" integrity="sha256-gkQVf8UKZgQ0HyuxL/VnacadJ+D2Kox2TCEBuNQg5+w=" crossorigin="anonymous">
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Pisces","version":"8.26.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":false,"codeblock":{"enable":false,"copy_button":{"enable":true,"show_result":true,"style":"flat"},"fold":{"enable":true,"height":400},"language":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
-    <meta property="og:type" content="website">
-<meta property="og:title" content="类别">
-<meta property="og:url" content="http://example.com/categories/index.html">
+    <meta name="description" content="闲来无事想给U校园做一个自动做题的脚本，顺便学习一下Python的web开发。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="尝试写U校园自动化脚本">
+<meta property="og:url" content="http://example.com/2025/12/29/%E5%B0%9D%E8%AF%95%E5%86%99U%E6%A0%A1%E5%9B%AD%E8%87%AA%E5%8A%A8%E5%8C%96%E8%84%9A%E6%9C%AC/index.html">
 <meta property="og:site_name" content="小小笑意">
+<meta property="og:description" content="闲来无事想给U校园做一个自动做题的脚本，顺便学习一下Python的web开发。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-12-24T13:45:09.000Z">
-<meta property="article:modified_time" content="2025-12-24T14:28:57.205Z">
+<meta property="article:published_time" content="2025-12-29T08:07:38.000Z">
+<meta property="article:modified_time" content="2026-01-01T12:30:40.418Z">
 <meta property="article:author" content="小小笑意">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="开发">
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="http://example.com/categories/">
+<link rel="canonical" href="http://example.com/2025/12/29/%E5%B0%9D%E8%AF%95%E5%86%99U%E6%A0%A1%E5%9B%AD%E8%87%AA%E5%8A%A8%E5%8C%96%E8%84%9A%E6%9C%AC/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://example.com/categories/index.html","path":"categories/index.html","title":"类别"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2025/12/29/%E5%B0%9D%E8%AF%95%E5%86%99U%E6%A0%A1%E5%9B%AD%E8%87%AA%E5%8A%A8%E5%8C%96%E8%84%9A%E6%9C%AC/","path":"2025/12/29/尝试写U校园自动化脚本/","title":"尝试写U校园自动化脚本"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>类别 | 小小笑意
-</title>
+<title>尝试写U校园自动化脚本 | 小小笑意</title>
   
 
 
@@ -144,7 +147,7 @@
   
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           文章目录
@@ -157,6 +160,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Selenium"><span class="nav-number">1.</span> <span class="nav-text">Selenium</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -1326,42 +1330,138 @@ function formatTime(seconds) {
 
     </div>
 
-    <div class="main-inner page posts-expand">
+    <div class="main-inner post posts-expand">
 
 
-    
-    
-    
-    <div class="post-block" lang="zh-CN"><header class="post-header">
+  
 
-<h1 class="post-title" itemprop="name headline">类别
-</h1>
 
-<div class="post-meta-container">
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/12/29/%E5%B0%9D%E8%AF%95%E5%86%99U%E6%A0%A1%E5%9B%AD%E8%87%AA%E5%8A%A8%E5%8C%96%E8%84%9A%E6%9C%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="小小笑意">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小笑意">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="尝试写U校园自动化脚本 | 小小笑意">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          尝试写U校园自动化脚本
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+  
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-12-29 16:07:38" itemprop="dateCreated datePublished" datetime="2025-12-29T16:07:38+08:00">2025-12-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-01-01 20:30:40" itemprop="dateModified" datetime="2026-01-01T20:30:40+08:00">2026-01-01</time>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>333</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
 </div>
 
-</header>
+        </div>
+      </header>
 
-      
-      
-      
-      <div class="post-body"><div class="category-all-page">
-  <div class="category-all-title">
-    暂无分类
-  </div>
-  <div class="category-all">
     
-  </div>
-</div>
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>闲来无事想给U校园做一个自动做题的脚本，顺便学习一下Python的web开发。</p>
+<h2 id="Selenium"><a href="#Selenium" class="headerlink" title="Selenium"></a>Selenium</h2><blockquote>
+<p> Selenium是一个开源的基于WebDriver实现的自动化测试工具。WebDriver提供了一套完整的API来控制浏览器，模拟用户的各种操作，如点击、输入文本、获取页面元素等。通过Selenium，我们可以编写自动化脚本，实现网页的自动化测试、数据采集等功能。它支持多种浏览器，如Chrome、Firefox、Edge等，并且提还供了丰富的语言绑定，包括Python、Java、C#等，使得开发者可以根据自己的需求选择合适的语言和工具链进行开发。</p>
+</blockquote>
+<p>因为我常用edge，所以我先开发的版本是适用于edge的</p>
+<p>先下载Selenium库</p>
+<pre><code>pip install selenium</code></pre>
 
-      </div>
-      
-      
-      
+<p>首先是</p>
+
     </div>
 
     
     
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>小小笑意
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2025/12/29/%E5%B0%9D%E8%AF%95%E5%86%99U%E6%A0%A1%E5%9B%AD%E8%87%AA%E5%8A%A8%E5%8C%96%E8%84%9A%E6%9C%AC/" title="尝试写U校园自动化脚本">http://example.com/2025/12/29/尝试写U校园自动化脚本/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"><i class="fa fa-tag"></i> Python</a>
+              <a href="/tags/%E5%BC%80%E5%8F%91/" rel="tag"><i class="fa fa-tag"></i> 开发</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/12/25/%E5%9C%A8hexo%E7%9A%84NexT%E4%B8%BB%E9%A2%98%E4%B8%8A%E4%B8%8A%E4%BC%A0%E9%9F%B3%E4%B9%90%E5%B9%B6%E8%AE%BE%E6%92%AD%E6%94%BE%E5%99%A8/" rel="prev" title="在hexo的NexT主题上上传音乐并设播放器">
+                  <i class="fa fa-angle-left"></i> 在hexo的NexT主题上上传音乐并设播放器
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
 
 
     

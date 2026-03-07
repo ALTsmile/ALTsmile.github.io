@@ -1162,7 +1162,7 @@ pre code {
     transition: all 0.2s ease-in-out;
   }
   .links-of-author a::before {
-    background: #325bff;
+    background: #abffbb;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -2720,4 +2720,8 @@ figcaption {
   border-bottom: 1px solid var(--border-color);
   padding: 0 2px 0 10px;
   background-color: var(--img-figcaption-bg-color);
+}
+/* 隐藏 SHIKI 语言标识 */
+.code-lang {
+  display: none !important;
 }
