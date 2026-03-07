@@ -1162,7 +1162,7 @@ pre code {
     transition: all 0.2s ease-in-out;
   }
   .links-of-author a::before {
-    background: #ec81b1;
+    background: #13a4ff;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -2732,6 +2732,10 @@ figcaption {
   overflow: hidden;
   margin: 20px 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: relative;
+  transition: all 0.3s ease;
+/* 代码块悬停效果 */
+/* 响应式设计 */
 }
 .shiki-container .shiki-header {
   background: #e1e4e8;
@@ -2740,6 +2744,9 @@ figcaption {
   font-weight: 600;
   color: #24292e;
   border-bottom: 1px solid #d1d5da;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .shiki-container .shiki-header .shiki-lang {
   background: #0366d6;
@@ -2748,12 +2755,14 @@ figcaption {
   border-radius: 3px;
   font-size: 11px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 .shiki-container .shiki-content {
   display: flex;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
   font-size: 14px;
   line-height: 1.45;
+  background: #f6f8fa;
 }
 .shiki-container .shiki-content .shiki-line-numbers {
   background: #f6f8fa;
@@ -2763,17 +2772,29 @@ figcaption {
   color: #6a737d;
   user-select: none;
   min-width: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 .shiki-container .shiki-content .shiki-line-numbers .line-number {
   display: block;
-  padding: 0 8px;
+  padding: 0 4px;
   line-height: 1.45;
+  height: 20px /* 固定行高 */;
+  font-size: 13px;
+  color: #6a737d;
+  opacity: 0.6;
+}
+.shiki-container .shiki-content .shiki-line-numbers .line-number:hover {
+  opacity: 1;
+  background: rgba(0,0,0,0.05);
+  border-radius: 2px;
 }
 .shiki-container .shiki-content .shiki-code {
   flex: 1;
   padding: 16px;
   overflow-x: auto;
-  background: #fff;
+  background: #f6f8fa;
 }
 .shiki-container .shiki-content .shiki-code pre {
   margin: 0;
@@ -2781,23 +2802,54 @@ figcaption {
   background: transparent;
   border: none;
 }
-.shiki-container .shiki-content .shiki-code code {
+.shiki-container .shiki-content .shiki-code pre code {
   background: transparent;
   padding: 0;
   font-size: inherit;
   line-height: inherit;
   color: inherit;
+  white-space: pre;
+  overflow-wrap: break-word;
+  overflow-wrap: normal;
+  display: block;
 }
-.shiki-container:hover .shiki-line-numbers {
-  background: #f1f3f4;
+.shiki-container:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 @media (max-width: 768px) {
+  .shiki-container {
+    margin: 15px 0;
+    border-radius: 4px;
+  }
+  .shiki-container .shiki-header {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+  .shiki-container .shiki-content {
+    font-size: 13px;
+  }
   .shiki-container .shiki-content .shiki-line-numbers {
     padding: 12px 6px;
-    font-size: 13px;
+    min-width: 36px;
   }
   .shiki-container .shiki-content .shiki-code {
     padding: 12px;
-    font-size: 13px;
   }
+}
+/* 行号悬停效果 */
+.shiki-line-numbers:hover .line-number {
+  opacity: 1;
+}
+/* 代码块展开/折叠按钮（可选） */
+.shiki-toggle {
+  background: none;
+  border: none;
+  color: #6a737d;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.shiki-toggle:hover {
+  background: rgba(0,0,0,0.1);
 }
