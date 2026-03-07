@@ -1162,7 +1162,7 @@ pre code {
     transition: all 0.2s ease-in-out;
   }
   .links-of-author a::before {
-    background: #9c57ff;
+    background: #a833ff;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -2725,67 +2725,74 @@ figcaption {
 .code-lang {
   display: none !important;
 }
-/* 代码块容器 */
-.shiki-code-block {
+/* 代码块包装容器 */
+.shiki-wrapper {
   margin: 1.5em 0;
   border-radius: 8px;
   overflow: hidden;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  background: #f6f8fa !important; /* 灰色背景 */
+  border: 1px solid #e1e4e8;
 }
 /* 头部 */
 .shiki-header {
   padding: 10px 16px;
-  background: #f1f3f5;
-  border-bottom: 1px solid #e9ecef;
+  background: #f0f2f5;
+  border-bottom: 1px solid #e1e4e8;
   font-size: 13px;
   font-weight: 500;
-  color: #495057;
+  color: #586069;
 }
-.lang-badge {
+.language-label {
   font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
   font-size: 12px;
-  color: #4263eb;
-  background: rgba(66,99,235,0.1);
+  color: #0366d6;
+  background: rgba(3,102,214,0.1);
   padding: 3px 10px;
-  border-radius: 4px;
-  border: 1px solid rgba(66,99,235,0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(3,102,214,0.2);
 }
-/* 主体 */
-.shiki-body {
+/* 内容区域 - 修复的关键：使用 flex 布局 */
+.shiki-content {
   display: flex;
-  background: #fcfdff;
+  background: #fafbfc !important; /* 代码区域背景 */
   overflow-x: auto;
   min-height: 60px;
 }
-/* 行号 */
+/* 行号区域 - 垂直排列 */
 .line-numbers {
   padding: 12px 8px 12px 16px;
-  background: #f8f9fa;
-  border-right: 1px solid #e9ecef;
+  background: #f6f8fa;
+  border-right: 1px solid #e1e4e8;
   text-align: right;
   user-select: none;
   font-family: 'SF Mono', 'Consolas', 'Menlo', monospace;
   font-size: 13px;
   line-height: 1.5;
-  color: #868e96;
+  color: #6a737d;
   min-width: 40px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column; /* 垂直排列 */
 }
+/* 每个行号单独一行 */
 .line-number {
-  padding: 0 4px;
   display: block;
-  min-height: 1.5em;
+  padding: 0 4px;
+  height: 1.5em; /* 匹配代码行高 */
+  line-height: 1.5em;
+  box-sizing: border-box;
 }
-/* 代码内容 */
-.code-content {
+/* 代码容器 */
+.code-container {
   flex: 1;
   padding: 12px 16px;
   overflow-x: auto;
+  background: #fafbfc;
   min-width: 0;
 }
-.code-content pre {
+/* 确保 Shiki 生成的代码正确显示 */
+.code-container pre {
   margin: 0 !important;
   padding: 0 !important;
   background: transparent !important;
@@ -2794,7 +2801,7 @@ figcaption {
   line-height: 1.5;
   color: #24292e;
 }
-.code-content code {
+.code-container code {
   display: block;
   background: transparent !important;
   font-family: inherit;
@@ -2804,4 +2811,56 @@ figcaption {
   word-break: normal;
   overflow-wrap: break-word;
   tab-size: 2;
+}
+/* 确保每行代码与行号对齐 */
+.code-container .line {
+  display: block;
+  min-height: 1.5em;
+  line-height: 1.5em;
+}
+/* 暗色模式适配 */
+[data-theme='dark'] .shiki-wrapper {
+  background: #0d1117 !important;
+  border-color: #30363d;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+[data-theme='dark'] .shiki-header {
+  background: #161b22;
+  border-bottom-color: #30363d;
+  color: #8b949e;
+}
+[data-theme='dark'] .language-label {
+  color: #58a6ff;
+  background: rgba(88,166,255,0.1);
+  border-color: rgba(88,166,255,0.2);
+}
+[data-theme='dark'] .line-numbers {
+  background: #161b22;
+  border-right-color: #30363d;
+  color: #6e7681;
+}
+[data-theme='dark'] .shiki-content,
+[data-theme='dark'] .code-container {
+  background: #0d1117 !important;
+}
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .shiki-wrapper {
+    margin: 1em -16px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  .line-numbers {
+    min-width: 36px;
+    padding: 10px 6px 10px 12px;
+    font-size: 12px;
+  }
+  .code-container {
+    padding: 10px 12px;
+  }
+  .code-container pre,
+  .code-container code {
+    font-size: 12px !important;
+  }
 }
