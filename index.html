@@ -1625,53 +1625,68 @@ function shikiCopyCode(blockId) {
     });
 }
 
-// 在折叠/展开功能中更新高度计算
+// 折叠/展开功能
 function shikiToggleCode(blockId) {
   const container = document.getElementById(blockId);
   if (!container) return;
   
+  const shouldFold = container.getAttribute('data-should-fold') === 'true';
+  if (!shouldFold) return;
+  
   const isFolded = container.classList.contains('shiki-folded');
-  const body = container.querySelector('.shiki-body');
+  const wrapper = container.querySelector('.shiki-body-wrapper');
   const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
-  const lineHeight = 19; // 与CSS中的line-height一致
-  const visibleLines = 7; // 默认显示7行
+  const lineHeight = 20; // 与CSS中的line-height一致
   
   if (isFolded) {
     // 展开全部
     container.classList.remove('shiki-folded');
     const fullHeight = (lineCount * lineHeight) + 24; // 加上padding
-    body.style.maxHeight = fullHeight + 'px';
+    wrapper.style.maxHeight = fullHeight + 'px';
   } else {
-    // 折叠到7行
+    // 折叠到8行
     container.classList.add('shiki-folded');
+    const visibleLines = 8;
     const foldedHeight = Math.min(lineCount, visibleLines) * lineHeight + 24;
-    body.style.maxHeight = foldedHeight + 'px';
+    wrapper.style.maxHeight = foldedHeight + 'px';
   }
 }
 
 // 页面加载后初始化
 document.addEventListener('DOMContentLoaded', function() {
-  // 为所有代码块设置初始高度
-  const codeContainers = document.querySelectorAll('.shiki-code-container');
+  // 为所有可折叠的代码块设置初始高度
+  const codeContainers = document.querySelectorAll('.shiki-code-container.has-fold-btn');
   
   codeContainers.forEach(container => {
     const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
-    const body = container.querySelector('.shiki-body');
+    const wrapper = container.querySelector('.shiki-body-wrapper');
     const isFolded = container.classList.contains('shiki-folded');
-    const lineHeight = 24;
+    const lineHeight = 20;
+    const visibleLines = 8;
     
-    if (body && lineCount > 0) {
+    if (wrapper && lineCount > visibleLines) {
       if (isFolded) {
-        // 折叠状态：显示6行
-        const foldedHeight = Math.min(lineCount, 6) * lineHeight + 40;
-        body.style.maxHeight = foldedHeight + 'px';
+        // 折叠状态：显示8行
+        const foldedHeight = Math.min(lineCount, visibleLines) * lineHeight + 24;
+        wrapper.style.maxHeight = foldedHeight + 'px';
       } else {
         // 展开状态
-        const fullHeight = (lineCount * lineHeight) + 40;
-        body.style.maxHeight = fullHeight + 'px';
+        const fullHeight = (lineCount * lineHeight) + 24;
+        wrapper.style.maxHeight = fullHeight + 'px';
       }
-      body.style.transition = 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+      wrapper.style.transition = 'max-height 0.3s ease';
     }
+  });
+  
+  // 添加同步滚动功能
+  const codeContents = document.querySelectorAll('.shiki-code-content');
+  codeContents.forEach(content => {
+    content.addEventListener('scroll', function() {
+      const lineNumbers = this.parentElement.querySelector('.shiki-line-numbers');
+      if (lineNumbers) {
+        lineNumbers.style.transform = `translateY(-${this.scrollTop}px)`;
+      }
+    });
   });
   
   // 添加键盘快捷键支持
