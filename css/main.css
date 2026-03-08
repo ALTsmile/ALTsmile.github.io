@@ -1106,7 +1106,7 @@ pre code {
     transition: all 0.2s ease-in-out;
   }
   .links-of-author a::before {
-    background: #93ff9c;
+    background: #7c630d;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -2647,9 +2647,9 @@ body {
   display: none !important;
 }
 /* ============================================
-   代码块样式 - 终极修复版本
+   代码块样式 - 修复代码截断和布局问题
 ============================================ */
-/* 代码块容器 */
+/* 代码块容器 - 确保正常文档流 */
 .shiki-code-container {
   margin: 1.5em 0;
   border-radius: 8px;
@@ -2657,7 +2657,10 @@ body {
   background: #f6f8fa;
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
+/* 关键修复：移除所有会截断内容的高度限制 */
+  min-height: auto !important;
   position: relative;
+  display: block;
 }
 .shiki-code-container:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
@@ -2710,16 +2713,21 @@ body {
   width: 14px;
   height: 14px;
 }
-/* 代码块主体包装器 */
+/* 代码块主体包装器 - 简化布局 */
 .shiki-code-container .shiki-body-wrapper {
-  transition: max-height 0.3s ease;
   background: #fff;
+/* 关键：确保内容正常显示，不截断 */
+  overflow: visible !important;
+/* 确保高度自适应 */
+  height: auto !important;
+  min-height: auto !important;
 }
 .shiki-code-container .shiki-body-wrapper .shiki-body {
   display: flex;
-  min-height: 0;
-/* 行号区域 - 简化布局 */
-/* 代码内容区域 - 关键修复：简化布局 */
+/* 关键：让内容自然扩展 */
+  min-height: auto;
+/* 行号区域 */
+/* 代码内容区域 - 关键修复：允许内容自然显示 */
 }
 .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-line-numbers {
   background: #f6f8fa;
@@ -2734,6 +2742,8 @@ body {
   align-items: stretch;
   font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 16px;
+/* 行号区域跟随代码高度 */
+  height: auto;
 }
 .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-line-numbers .line-number {
   display: block;
@@ -2753,48 +2763,55 @@ body {
   font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 16px;
   line-height: 24px;
-  position: relative;
-/* 彻底重置所有子元素样式 */
-/* 直接处理 Shiki 生成的 HTML 结构 */
+/* 关键：移除所有会截断内容的样式 */
+  height: auto !important;
+  min-height: auto !important;
+  overflow: visible !important;
+  white-space: pre-wrap !important;
+  overflow-wrap: break-word;
+/* 重置所有行内样式 */
 }
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="shiki-"],
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code .code-line,
 .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="line"],
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span,
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div {
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span {
   display: block;
-  height: 24px;
+  height: auto;
   min-height: 24px;
   line-height: 24px;
   font-size: 16px;
-/* 确保行内元素不影响布局 */
-/* 修复重叠问题：强制清除浮动和定位 */
-  float: none !important;
-  position: static !important;
-  clear: both !important;
+  margin: 0;
+  padding: 0;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+/* 确保行内元素正常显示 */
 /* 移除空行 */
 }
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="shiki-"] > span,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code .code-line > span,
 .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="line"] > span,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div > span,
 .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span > span,
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div > span {
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code .code-line > code,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="line"] > code,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div > code,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span > code,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code .code-line > pre,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="line"] > pre,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div > pre,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span > pre {
   display: inline;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  height: auto;
   line-height: inherit;
-  height: inherit;
-  vertical-align: baseline;
 }
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="shiki-"]:empty,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code .code-line:empty,
 .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="line"]:empty,
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span:empty,
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div:empty {
-  display: none !important;
-  height: 0 !important;
-  min-height: 0 !important;
-  line-height: 0 !important;
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div:empty,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span:empty {
+  display: none;
+  height: 0;
+  min-height: 0;
 }
 /* 代码块底部 */
 .shiki-code-container .shiki-footer {
@@ -2828,10 +2845,11 @@ body {
   height: 14px;
   transition: transform 0.3s ease;
 }
-/* 折叠状态 */
+/* 折叠状态 - 修复：使用更合理的高度限制 */
 .shiki-code-container.has-fold-btn.shiki-folded .shiki-body-wrapper {
-  max-height: 216px;
+  max-height: 300px;
   overflow: hidden;
+  transition: max-height 0.3s ease;
 }
 .shiki-code-container.has-fold-btn.shiki-folded .shiki-footer .shiki-fold-btn .fold-icon {
   transform: rotate(0deg);
@@ -2839,9 +2857,11 @@ body {
 .shiki-code-container.has-fold-btn.shiki-folded .shiki-footer .fold-text::before {
   content: "展开代码";
 }
-/* 展开状态 */
+/* 展开状态 - 修复：确保高度自适应 */
 .shiki-code-container.has-fold-btn:not(.shiki-folded) .shiki-body-wrapper {
-  max-height: 10000px !important;
+  max-height: none !important;
+  overflow: visible !important;
+  transition: max-height 0.3s ease;
 }
 .shiki-code-container.has-fold-btn:not(.shiki-folded) .shiki-footer .shiki-fold-btn .fold-icon {
   transform: rotate(180deg);
@@ -2855,43 +2875,4 @@ body {
 }
 .shiki-code-container:not(.has-fold-btn) .shiki-footer {
   display: none;
-}
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .shiki-code-container {
-    margin: 1em 0;
-    border-radius: 6px;
-  }
-  .shiki-code-container .shiki-header {
-    padding: 8px 12px;
-  }
-  .shiki-code-container .shiki-header .shiki-lang {
-    font-size: 11px;
-    padding: 2px 8px;
-  }
-  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-line-numbers {
-    min-width: 40px;
-    width: 40px;
-    padding: 10px 0;
-    font-size: 14px;
-  }
-  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-line-numbers .line-number {
-    height: 22px;
-    min-height: 22px;
-    line-height: 22px;
-  }
-  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code {
-    padding: 10px 12px;
-    font-size: 14px;
-    line-height: 22px;
-  }
-  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="shiki-"],
-  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="line"],
-  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span,
-  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div {
-    height: 22px;
-    min-height: 22px;
-    line-height: 22px;
-    font-size: 14px;
-  }
 }

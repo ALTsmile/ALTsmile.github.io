@@ -1407,14 +1407,14 @@ function formatTime(seconds) {
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">14k</span>
+    <span title="站点总字数">35k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">13 分钟</span>
+    <span title="站点阅读时长">32 分钟</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
@@ -1498,7 +1498,7 @@ function shikiCopyCode(blockId) {
     });
 }
 
-// 折叠/展开功能
+// 折叠/展开功能 - 修复布局重排
 function shikiToggleCode(blockId) {
   const container = document.getElementById(blockId);
   if (!container) return;
@@ -1508,108 +1508,72 @@ function shikiToggleCode(blockId) {
   
   const isFolded = container.classList.contains('shiki-folded');
   const wrapper = container.querySelector('.shiki-body-wrapper');
-  const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
-  const lineHeight = 24;
   
   if (isFolded) {
     // 展开全部
     container.classList.remove('shiki-folded');
-    const fullHeight = (lineCount * lineHeight) + 24;
-    wrapper.style.maxHeight = fullHeight + 'px';
+    wrapper.style.maxHeight = 'none';
   } else {
-    // 折叠到8行
+    // 折叠
     container.classList.add('shiki-folded');
-    const visibleLines = 8;
-    const foldedHeight = (Math.min(lineCount, visibleLines) * lineHeight) + 24;
-    wrapper.style.maxHeight = foldedHeight + 'px';
+    wrapper.style.maxHeight = '300px'; // 显示足够的行数
   }
+  
+  // 关键修复：触发浏览器重排，让正文自动下移
+  setTimeout(() => {
+    // 强制触发布局重排
+    const body = document.body;
+    body.style.display = 'none';
+    body.offsetHeight; // 触发重排
+    body.style.display = '';
+    
+    // 另一种方式：滚动到代码块
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 10);
 }
 
 // 页面加载后修复布局
 document.addEventListener('DOMContentLoaded', function() {
   console.log('开始修复代码块布局...');
   
+  // 修复折叠代码块的高度
   setTimeout(() => {
-    const containers = document.querySelectorAll('.shiki-code-container');
+    const containers = document.querySelectorAll('.shiki-code-container.has-fold-btn');
     
-    containers.forEach((container, index) => {
-      const lineNumbers = container.querySelectorAll('.line-number');
-      const codeLines = container.querySelectorAll('.code-line');
-      
-      console.log(`代码块 ${index}: 行号=${lineNumbers.length}, 代码行=${codeLines.length}`);
-      
-      // 修复行高
-      const targetHeight = 24;
-      
-      // 设置行号高度
-      lineNumbers.forEach(line => {
-        line.style.height = targetHeight + 'px';
-        line.style.minHeight = targetHeight + 'px';
-        line.style.lineHeight = targetHeight + 'px';
-        line.style.display = 'flex';
-        line.style.alignItems = 'center';
-        line.style.justifyContent = 'center';
-      });
-      
-      // 设置代码行高度
-      codeLines.forEach(line => {
-        line.style.height = targetHeight + 'px';
-        line.style.minHeight = targetHeight + 'px';
-        line.style.lineHeight = targetHeight + 'px';
-        line.style.display = 'block';
-        line.style.margin = '0';
-        line.style.padding = '0';
-        line.style.position = 'relative';
-        
-        // 移除空行
-        if (line.textContent.trim() === '' && line.children.length === 0) {
-          line.style.display = 'none';
-        }
-        
-        // 修复行内元素
-        const spans = line.querySelectorAll('span');
-        spans.forEach(span => {
-          span.style.display = 'inline';
-          span.style.lineHeight = 'inherit';
-          span.style.height = 'inherit';
-          span.style.verticalAlign = 'baseline';
-        });
-      });
-      
-      // 移除重叠的代码行
-      const allLines = container.querySelectorAll('.shiki-code > *');
-      const positions = new Set();
-      
-      allLines.forEach(line => {
-        const rect = line.getBoundingClientRect();
-        const posKey = `${rect.top}-${rect.left}`;
-        
-        if (positions.has(posKey)) {
-          // 发现重叠，移除
-          line.remove();
-        } else {
-          positions.add(posKey);
-        }
-      });
-    });
-    
-    // 为可折叠代码块设置高度
-    const foldableContainers = document.querySelectorAll('.shiki-code-container.has-fold-btn');
-    
-    foldableContainers.forEach(container => {
+    containers.forEach(container => {
       const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
       const wrapper = container.querySelector('.shiki-body-wrapper');
       const isFolded = container.classList.contains('shiki-folded');
       
       if (wrapper && lineCount > 8) {
         if (isFolded) {
-          wrapper.style.maxHeight = '216px';
+          wrapper.style.maxHeight = '300px';
         } else {
-          wrapper.style.maxHeight = (lineCount * 24 + 24) + 'px';
+          wrapper.style.maxHeight = 'none';
         }
+      }
+      
+      // 确保代码内容正常显示
+      const codeElement = container.querySelector('.shiki-code');
+      if (codeElement) {
+        // 移除所有可能截断内容的样式
+        codeElement.style.height = 'auto';
+        codeElement.style.minHeight = 'auto';
+        codeElement.style.maxHeight = 'none';
+        codeElement.style.overflow = 'visible';
+        codeElement.style.whiteSpace = 'pre-wrap';
+        codeElement.style.wordWrap = 'break-word';
       }
     });
   }, 100);
+  
+  // 修复正文不自动下移的问题
+  window.addEventListener('resize', function() {
+    // 窗口大小变化时触发重排
+    document.body.style.display = 'none';
+    document.body.offsetHeight;
+    document.body.style.display = '';
+  });
 });
 </script>
 <!-- hexo injector body_end end --></body>
