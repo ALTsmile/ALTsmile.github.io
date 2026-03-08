@@ -1458,7 +1458,7 @@ function shikiCopyCode(blockId) {
   const container = document.getElementById(blockId);
   if (!container) return;
   
-  const codeElement = container.querySelector('.shiki-code code');
+  const codeElement = container.querySelector('.shiki-code-block');
   if (!codeElement) return;
   
   const codeText = codeElement.innerText || codeElement.textContent;
@@ -1534,40 +1534,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  // 修复滚动同步
-  const codeElements = document.querySelectorAll('.shiki-code');
-  codeElements.forEach(code => {
-    const lineNumbers = code.parentElement.querySelector('.shiki-line-numbers');
-    
-    if (lineNumbers) {
-      // 移除之前的监听器
-      const newListener = function() {
-        const scrollTop = this.scrollTop;
-        lineNumbers.style.transform = `translateY(-${scrollTop}px)`;
-      };
-      
-      // 移除旧的，添加新的
-      code.removeEventListener('scroll', newListener);
-      code.addEventListener('scroll', newListener);
-    }
-  });
-  
-  // 修复代码行对齐
+  // 修复对齐：确保每行高度一致
   setTimeout(() => {
-    document.querySelectorAll('.shiki-code pre code').forEach(code => {
-      const lines = code.querySelectorAll('.line');
-      lines.forEach((line, index) => {
-        // 移除空行
-        if (line.textContent.trim() === '' && line.innerHTML === '') {
-          line.remove();
-        }
-        // 确保每行有正确的高度
-        line.style.height = '24px';
-        line.style.minHeight = '24px';
-        line.style.lineHeight = '24px';
-      });
+    const codeContainers = document.querySelectorAll('.shiki-code-container');
+    codeContainers.forEach(container => {
+      const lineNumbers = container.querySelectorAll('.line-number');
+      const codeLines = container.querySelectorAll('.shiki-line');
+      
+      // 确保行数和代码行数一致
+      if (lineNumbers.length > 0 && codeLines.length > 0) {
+        const targetHeight = 24; // 桌面端
+        
+        // 设置行号高度
+        lineNumbers.forEach(line => {
+          line.style.height = targetHeight + 'px';
+          line.style.minHeight = targetHeight + 'px';
+          line.style.lineHeight = targetHeight + 'px';
+        });
+        
+        // 设置代码行高度
+        codeLines.forEach(line => {
+          line.style.height = targetHeight + 'px';
+          line.style.minHeight = targetHeight + 'px';
+          line.style.lineHeight = targetHeight + 'px';
+        });
+      }
     });
-  }, 100);
+  }, 50);
 });
 </script>
 <!-- hexo injector body_end end --></body>
