@@ -1415,11 +1415,11 @@ function formatTime(seconds) {
 <ul>
 <li>然后在NexT的配置文件<code>_config.yml</code>中在最后一行输入以下配置信息</li>
 </ul>
-<div class="shiki-code-container  " id="code-1772952980152-2" data-line-count="4" data-should-fold="false">
+<div class="shiki-code-container  " id="code-1772953610234-2" data-line-count="4" data-should-fold="false">
   <div class="shiki-header">
     <span class="shiki-lang">YAML</span>
     <div class="shiki-actions">
-      <button class="shiki-copy-btn" onclick="shikiCopyCode('code-1772952980152-2')" title="复制代码">
+      <button class="shiki-copy-btn" onclick="shikiCopyCode('code-1772953610234-2')" title="复制代码">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -1458,11 +1458,11 @@ function formatTime(seconds) {
 <li>配置音乐播放器</li>
 </ul>
 <p>在<code>source/_data</code>下新建一个文件<code>sidebar-music.njk</code>，然后找AI生成代码，我这边已经调试了很久，把代码复制粘贴上去即可</p>
-<div class="shiki-code-container shiki-folded has-fold-btn" id="code-1772952980175-3" data-line-count="1126" data-should-fold="true">
+<div class="shiki-code-container shiki-folded has-fold-btn" id="code-1772953610256-3" data-line-count="1126" data-should-fold="true">
   <div class="shiki-header">
     <span class="shiki-lang">CSS</span>
     <div class="shiki-actions">
-      <button class="shiki-copy-btn" onclick="shikiCopyCode('code-1772952980175-3')" title="复制代码">
+      <button class="shiki-copy-btn" onclick="shikiCopyCode('code-1772953610256-3')" title="复制代码">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -2703,7 +2703,7 @@ function formatTime(seconds) {
 <p><span class="shiki-line"><span style="color:#24292E">function formatTime(seconds) {</span></span><br><span class="shiki-line"><span style="color:#005CC5">  if</span><span style="color:#24292E"> (</span><span style="color:#005CC5">isNaN</span><span style="color:#24292E">(</span><span style="color:#005CC5">seconds</span><span style="color:#24292E">) || </span><span style="color:#005CC5">seconds</span><span style="color:#24292E"> &#x3D;&#x3D;&#x3D; 0) </span><span style="color:#005CC5">return</span><span style="color:#24292E"> ‘00:</span><span style="color:#005CC5">00</span><span style="color:#032F62">‘</span><span style="color:#B31D28;font-style:italic">;</span></span><br><span class="shiki-line"><span style="color:#24292E">  const mins &#x3D; Math.floor(seconds &#x2F; </span><span style="color:#005CC5">60</span><span style="color:#24292E">);</span></span><br><span class="shiki-line"><span style="color:#005CC5">  const</span><span style="color:#005CC5"> secs</span><span style="color:#24292E"> &#x3D; </span><span style="color:#005CC5">Math</span><span style="color:#24292E">.</span><span style="color:#005CC5">floor</span><span style="color:#24292E">(</span><span style="color:#005CC5">seconds</span><span style="color:#24292E"> % 60);</span></span><br><span class="shiki-line"><span style="color:#005CC5">  return</span><span style="color:#24292E"> <code>$&#123;&lt;/span&gt;&lt;span style=&quot;color:#005CC5&quot;&gt;mins&lt;/span&gt;&lt;span style=&quot;color:#24292E&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#005CC5&quot;&gt;toString&lt;/span&gt;&lt;span style=&quot;color:#24292E&quot;&gt;().&lt;/span&gt;&lt;span style=&quot;color:#005CC5&quot;&gt;padStart&lt;/span&gt;&lt;span style=&quot;color:#24292E&quot;&gt;(2, &#39;0&#39;)&#125;:$&#123;&lt;/span&gt;&lt;span style=&quot;color:#005CC5&quot;&gt;secs&lt;/span&gt;&lt;span style=&quot;color:#24292E&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#005CC5&quot;&gt;toString&lt;/span&gt;&lt;span style=&quot;color:#24292E&quot;&gt;().&lt;/span&gt;&lt;span style=&quot;color:#005CC5&quot;&gt;padStart&lt;/span&gt;&lt;span style=&quot;color:#24292E&quot;&gt;(2, &#39;0&#39;)&#125;</code>;</span></span><br><span class="shiki-line"><span style="color:#24292E">}</span></span><br><span class="shiki-line"><span style="color:#24292E">&#x3C;&#x2F;</span><span style="color:#22863A">script</span><span style="color:#D73A49">&gt;</span></span></p>
 <p><span class="shiki-line"><span style="color:#24292E">&#x3C;!– 引入 APlayer –</span><span style="color:#D73A49">&gt;</span></span><br><span class="shiki-line"><span style="color:#24292E">&#x3C;</span><span style="color:#22863A">link</span><span style="color:#24292E"> rel&#x3D;”stylesheet” href&#x3D;”<a target="_blank" rel="noopener" href="https://cdn/">https://cdn</a></span><span style="color:#6F42C1">.jsdelivr</span><span style="color:#24292E">.net&#x2F;npm&#x2F;aplayer@1</span><span style="color:#6F42C1">.10</span><span style="color:#24292E">.1&#x2F;dist&#x2F;APlayer</span><span style="color:#6F42C1">.min</span><span style="color:#24292E">.css”</span><span style="color:#D73A49">&gt;</span></span><br><span class="shiki-line"><span style="color:#24292E">&#x3C;</span><span style="color:#22863A">script</span><span style="color:#24292E"> src&#x3D;”<a target="_blank" rel="noopener" href="https://cdn/">https://cdn</a></span><span style="color:#6F42C1">.jsdelivr</span><span style="color:#24292E">.net&#x2F;npm&#x2F;aplayer@1</span><span style="color:#6F42C1">.10</span><span style="color:#24292E">.1&#x2F;dist&#x2F;APlayer</span><span style="color:#6F42C1">.min</span><span style="color:#24292E">.js”</span><span style="color:#D73A49">&gt;</span><span style="color:#24292E">&#x3C;&#x2F;</span><span style="color:#22863A">script</span><span style="color:#D73A49">&gt;</span></span></code></pre><br>      </div><br>    </div><br>  </div></p>
   <div class="shiki-footer">
-    <button class="shiki-fold-btn" onclick="shikiToggleCode('code-1772952980175-3')">
+    <button class="shiki-fold-btn" onclick="shikiToggleCode('code-1772953610256-3')">
       <span class="fold-text">展开代码</span>
       <svg class="fold-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="6 9 12 15 18 9"></polyline>
