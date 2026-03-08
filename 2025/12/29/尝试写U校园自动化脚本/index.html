@@ -1490,14 +1490,14 @@ function formatTime(seconds) {
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">28k</span>
+    <span title="站点总字数">35k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">26 分钟</span>
+    <span title="站点阅读时长">32 分钟</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
@@ -1592,12 +1592,12 @@ function shikiToggleCode(blockId) {
   const isFolded = container.classList.contains('shiki-folded');
   const wrapper = container.querySelector('.shiki-body-wrapper');
   const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
-  const lineHeight = 22; // 与CSS中的line-height一致
+  const lineHeight = 24; // 与CSS中的line-height一致
   
   if (isFolded) {
     // 展开全部
     container.classList.remove('shiki-folded');
-    const fullHeight = (lineCount * lineHeight) + 24; // 加上padding
+    const fullHeight = (lineCount * lineHeight) + 24;
     wrapper.style.maxHeight = fullHeight + 'px';
   } else {
     // 折叠到8行
@@ -1617,7 +1617,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
     const wrapper = container.querySelector('.shiki-body-wrapper');
     const isFolded = container.classList.contains('shiki-folded');
-    const lineHeight = 22;
+    const lineHeight = 24;
     const visibleLines = 8;
     
     if (wrapper && lineCount > visibleLines) {
@@ -1634,57 +1634,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  // 添加滚动同步
+  // 修复滚动同步
   const codeElements = document.querySelectorAll('.shiki-code');
   codeElements.forEach(code => {
     const lineNumbers = code.parentElement.querySelector('.shiki-line-numbers');
     
     if (lineNumbers) {
-      // 计算偏移量以确保精确对齐
-      code.addEventListener('scroll', function() {
+      // 移除之前的监听器
+      const newListener = function() {
         const scrollTop = this.scrollTop;
         lineNumbers.style.transform = `translateY(-${scrollTop}px)`;
-        
-        // 高亮当前可见的行号
-        const lineHeight = 22;
-        const startLine = Math.floor(scrollTop / lineHeight) + 1;
-        const endLine = Math.floor((scrollTop + this.clientHeight) / lineHeight) + 1;
-        
-        const lineNumberElements = lineNumbers.querySelectorAll('.line-number');
-        lineNumberElements.forEach((el, index) => {
-          const lineNum = index + 1;
-          if (lineNum >= startLine && lineNum <= endLine) {
-            el.style.opacity = '1';
-            el.style.fontWeight = '600';
-          } else {
-            el.style.opacity = '0.6';
-            el.style.fontWeight = 'normal';
-          }
-        });
-      });
+      };
+      
+      // 移除旧的，添加新的
+      code.removeEventListener('scroll', newListener);
+      code.addEventListener('scroll', newListener);
     }
   });
   
-  // 键盘快捷键支持
-  document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-      const active = document.activeElement;
-      const container = active.closest('.shiki-code-container');
-      if (container && container.id) {
-        e.preventDefault();
-        shikiCopyCode(container.id);
-      }
-    }
-  });
-  
-  // 强制重排确保精确对齐
+  // 修复代码行对齐
   setTimeout(() => {
-    document.querySelectorAll('.shiki-code').forEach(code => {
-      code.style.display = 'none';
-      code.offsetHeight; // 触发重排
-      code.style.display = '';
+    document.querySelectorAll('.shiki-code pre code').forEach(code => {
+      const lines = code.querySelectorAll('.line');
+      lines.forEach((line, index) => {
+        // 移除空行
+        if (line.textContent.trim() === '' && line.innerHTML === '') {
+          line.remove();
+        }
+        // 确保每行有正确的高度
+        line.style.height = '24px';
+        line.style.minHeight = '24px';
+        line.style.lineHeight = '24px';
+      });
     });
-  }, 50);
+  }, 100);
 });
 </script>
 <!-- hexo injector body_end end --></body>
