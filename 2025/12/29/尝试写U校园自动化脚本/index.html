@@ -1490,14 +1490,14 @@ function formatTime(seconds) {
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">35k</span>
+    <span title="站点总字数">15k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">32 分钟</span>
+    <span title="站点阅读时长">14 分钟</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
@@ -1608,36 +1608,82 @@ function shikiToggleCode(blockId) {
   }
 }
 
-// 页面加载后初始化
+// 页面加载后修复对齐
 document.addEventListener('DOMContentLoaded', function() {
-  // 为可折叠代码块设置初始高度
-  const codeContainers = document.querySelectorAll('.shiki-code-container.has-fold-btn');
+  console.log('开始修复代码块对齐...');
   
-  codeContainers.forEach(container => {
-    const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
-    const wrapper = container.querySelector('.shiki-body-wrapper');
-    const isFolded = container.classList.contains('shiki-folded');
-    const lineHeight = 24;
-    const visibleLines = 8;
-    
-    if (wrapper && lineCount > visibleLines) {
-      if (isFolded) {
-        const foldedHeight = (Math.min(lineCount, visibleLines) * lineHeight) + 24;
-        wrapper.style.maxHeight = foldedHeight + 'px';
-      } else {
-        const fullHeight = (lineCount * lineHeight) + 24;
-        wrapper.style.maxHeight = fullHeight + 'px';
-      }
-      wrapper.style.transition = 'max-height 0.3s ease';
-    }
-  });
-  
-  // 修复空行问题
+  // 等待所有内容加载完成
   setTimeout(() => {
-    const codeLines = document.querySelectorAll('.shiki-code-line');
-    codeLines.forEach(line => {
-      if (line.textContent.trim() === '' && line.children.length === 0) {
-        line.remove();
+    const containers = document.querySelectorAll('.shiki-code-container');
+    
+    containers.forEach((container, index) => {
+      const lineNumbers = container.querySelectorAll('.line-number');
+      const codeLines = container.querySelectorAll('.shiki-code-line');
+      
+      console.log(`代码块 ${index}: 行号=${lineNumbers.length}, 代码行=${codeLines.length}`);
+      
+      // 确保行数匹配
+      if (lineNumbers.length !== codeLines.length) {
+        console.warn(`行数不匹配! 行号:${lineNumbers.length}, 代码行:${codeLines.length}`);
+      }
+      
+      // 修复行高对齐
+      const targetHeight = 24; // 桌面端
+      
+      // 设置行号高度
+      lineNumbers.forEach((line, i) => {
+        line.style.height = targetHeight + 'px';
+        line.style.minHeight = targetHeight + 'px';
+        line.style.lineHeight = targetHeight + 'px';
+        line.style.display = 'flex';
+        line.style.alignItems = 'center';
+        line.style.justifyContent = 'center';
+      });
+      
+      // 设置代码行高度
+      codeLines.forEach((line, i) => {
+        line.style.height = targetHeight + 'px';
+        line.style.minHeight = targetHeight + 'px';
+        line.style.lineHeight = targetHeight + 'px';
+        line.style.display = 'block';
+        line.style.margin = '0';
+        line.style.padding = '0';
+        line.style.boxSizing = 'border-box';
+        
+        // 移除空行
+        if (line.textContent.trim() === '' && line.children.length === 0) {
+          line.style.display = 'none';
+          line.style.height = '0';
+          line.style.minHeight = '0';
+          line.style.lineHeight = '0';
+        }
+      });
+      
+      // 为可折叠代码块设置高度
+      const shouldFold = container.getAttribute('data-should-fold') === 'true';
+      if (shouldFold) {
+        const wrapper = container.querySelector('.shiki-body-wrapper');
+        const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
+        const isFolded = container.classList.contains('shiki-folded');
+        
+        if (wrapper && lineCount > 8) {
+          if (isFolded) {
+            wrapper.style.maxHeight = '216px'; // 9行 * 24px
+          } else {
+            wrapper.style.maxHeight = (lineCount * 24 + 24) + 'px';
+          }
+        }
+      }
+    });
+    
+    // 添加滚动同步
+    document.querySelectorAll('.shiki-code').forEach(code => {
+      const lineNumbers = code.parentElement.querySelector('.shiki-line-numbers');
+      
+      if (lineNumbers) {
+        code.addEventListener('scroll', function() {
+          lineNumbers.style.transform = 'translateY(-' + this.scrollTop + 'px)';
+        });
       }
     });
   }, 100);
