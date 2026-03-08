@@ -1383,14 +1383,14 @@ function formatTime(seconds) {
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">34k</span>
+    <span title="站点总字数">14k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">31 分钟</span>
+    <span title="站点阅读时长">13 分钟</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
@@ -1501,35 +1501,88 @@ function shikiToggleCode(blockId) {
   }
 }
 
-// 页面加载后修复对齐
+// 页面加载后修复布局
 document.addEventListener('DOMContentLoaded', function() {
-  // 为可折叠代码块设置初始高度
-  const codeContainers = document.querySelectorAll('.shiki-code-container.has-fold-btn');
+  console.log('开始修复代码块布局...');
   
-  codeContainers.forEach(container => {
-    const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
-    const wrapper = container.querySelector('.shiki-body-wrapper');
-    const isFolded = container.classList.contains('shiki-folded');
-    const lineHeight = 24;
-    const visibleLines = 8;
-    
-    if (wrapper && lineCount > visibleLines) {
-      if (isFolded) {
-        const foldedHeight = (Math.min(lineCount, visibleLines) * lineHeight) + 24;
-        wrapper.style.maxHeight = foldedHeight + 'px';
-      } else {
-        const fullHeight = (lineCount * lineHeight) + 24;
-        wrapper.style.maxHeight = fullHeight + 'px';
-      }
-    }
-  });
-  
-  // 修复空行问题
   setTimeout(() => {
-    const codeLines = document.querySelectorAll('.shiki-code-line');
-    codeLines.forEach(line => {
-      if (line.textContent.trim() === '' && line.children.length === 0) {
-        line.remove();
+    const containers = document.querySelectorAll('.shiki-code-container');
+    
+    containers.forEach((container, index) => {
+      const lineNumbers = container.querySelectorAll('.line-number');
+      const codeLines = container.querySelectorAll('.code-line');
+      
+      console.log(`代码块 ${index}: 行号=${lineNumbers.length}, 代码行=${codeLines.length}`);
+      
+      // 修复行高
+      const targetHeight = 24;
+      
+      // 设置行号高度
+      lineNumbers.forEach(line => {
+        line.style.height = targetHeight + 'px';
+        line.style.minHeight = targetHeight + 'px';
+        line.style.lineHeight = targetHeight + 'px';
+        line.style.display = 'flex';
+        line.style.alignItems = 'center';
+        line.style.justifyContent = 'center';
+      });
+      
+      // 设置代码行高度
+      codeLines.forEach(line => {
+        line.style.height = targetHeight + 'px';
+        line.style.minHeight = targetHeight + 'px';
+        line.style.lineHeight = targetHeight + 'px';
+        line.style.display = 'block';
+        line.style.margin = '0';
+        line.style.padding = '0';
+        line.style.position = 'relative';
+        
+        // 移除空行
+        if (line.textContent.trim() === '' && line.children.length === 0) {
+          line.style.display = 'none';
+        }
+        
+        // 修复行内元素
+        const spans = line.querySelectorAll('span');
+        spans.forEach(span => {
+          span.style.display = 'inline';
+          span.style.lineHeight = 'inherit';
+          span.style.height = 'inherit';
+          span.style.verticalAlign = 'baseline';
+        });
+      });
+      
+      // 移除重叠的代码行
+      const allLines = container.querySelectorAll('.shiki-code > *');
+      const positions = new Set();
+      
+      allLines.forEach(line => {
+        const rect = line.getBoundingClientRect();
+        const posKey = `${rect.top}-${rect.left}`;
+        
+        if (positions.has(posKey)) {
+          // 发现重叠，移除
+          line.remove();
+        } else {
+          positions.add(posKey);
+        }
+      });
+    });
+    
+    // 为可折叠代码块设置高度
+    const foldableContainers = document.querySelectorAll('.shiki-code-container.has-fold-btn');
+    
+    foldableContainers.forEach(container => {
+      const lineCount = parseInt(container.getAttribute('data-line-count')) || 0;
+      const wrapper = container.querySelector('.shiki-body-wrapper');
+      const isFolded = container.classList.contains('shiki-folded');
+      
+      if (wrapper && lineCount > 8) {
+        if (isFolded) {
+          wrapper.style.maxHeight = '216px';
+        } else {
+          wrapper.style.maxHeight = (lineCount * 24 + 24) + 'px';
+        }
       }
     });
   }, 100);

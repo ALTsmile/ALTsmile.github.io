@@ -1106,7 +1106,7 @@ pre code {
     transition: all 0.2s ease-in-out;
   }
   .links-of-author a::before {
-    background: #ff9359;
+    background: #93ff9c;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -2647,7 +2647,7 @@ body {
   display: none !important;
 }
 /* ============================================
-   代码块样式 - 最终修复版本
+   代码块样式 - 终极修复版本
 ============================================ */
 /* 代码块容器 */
 .shiki-code-container {
@@ -2657,6 +2657,7 @@ body {
   background: #f6f8fa;
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
+  position: relative;
 }
 .shiki-code-container:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
@@ -2712,12 +2713,13 @@ body {
 /* 代码块主体包装器 */
 .shiki-code-container .shiki-body-wrapper {
   transition: max-height 0.3s ease;
+  background: #fff;
 }
 .shiki-code-container .shiki-body-wrapper .shiki-body {
   display: flex;
-  background: #fff;
-/* 行号区域 */
-/* 代码内容区域 - 移除内部滚动 */
+  min-height: 0;
+/* 行号区域 - 简化布局 */
+/* 代码内容区域 - 关键修复：简化布局 */
 }
 .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-line-numbers {
   background: #f6f8fa;
@@ -2739,7 +2741,6 @@ body {
   min-height: 24px;
   line-height: 24px;
   color: #6e7781;
-  box-sizing: border-box;
 }
 .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-line-numbers .line-number:hover {
   color: #24292f;
@@ -2752,30 +2753,48 @@ body {
   font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 16px;
   line-height: 24px;
-  overflow: visible !important;
+  position: relative;
+/* 彻底重置所有子元素样式 */
+/* 直接处理 Shiki 生成的 HTML 结构 */
 }
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code .shiki-code-line {
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="shiki-"],
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="line"],
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div {
   display: block;
   height: 24px;
   min-height: 24px;
   line-height: 24px;
   font-size: 16px;
-  margin: 0;
-  padding: 0;
 /* 确保行内元素不影响布局 */
+/* 修复重叠问题：强制清除浮动和定位 */
+  float: none !important;
+  position: static !important;
+  clear: both !important;
 /* 移除空行 */
 }
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code .shiki-code-line > span {
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="shiki-"] > span,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="line"] > span,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span > span,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div > span {
   display: inline;
   line-height: inherit;
   height: inherit;
   vertical-align: baseline;
 }
-.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code .shiki-code-line:empty {
-  display: none;
-  height: 0;
-  min-height: 0;
-  line-height: 0;
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="shiki-"]:empty,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="line"]:empty,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span:empty,
+.shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div:empty {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  line-height: 0 !important;
 }
 /* 代码块底部 */
 .shiki-code-container .shiki-footer {
@@ -2822,8 +2841,7 @@ body {
 }
 /* 展开状态 */
 .shiki-code-container.has-fold-btn:not(.shiki-folded) .shiki-body-wrapper {
-  max-height: none !important;
-  overflow: visible !important;
+  max-height: 10000px !important;
 }
 .shiki-code-container.has-fold-btn:not(.shiki-folded) .shiki-footer .shiki-fold-btn .fold-icon {
   transform: rotate(180deg);
@@ -2838,73 +2856,11 @@ body {
 .shiki-code-container:not(.has-fold-btn) .shiki-footer {
   display: none;
 }
-/* 暗色主题适配 */
-[data-theme='dark'] .shiki-code-container {
-  background: #0d1117;
-  border-color: #30363d;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-}
-[data-theme='dark'] .shiki-code-container:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-  border-color: #3e4c5a;
-}
-[data-theme='dark'] .shiki-code-container .shiki-header {
-  background: #0d1117;
-  border-bottom-color: #30363d;
-}
-[data-theme='dark'] .shiki-code-container .shiki-header .shiki-lang {
-  color: #c9d1d9;
-  background: rgba(110,118,129,0.4);
-  border-color: rgba(110,118,129,0.6);
-}
-[data-theme='dark'] .shiki-code-container .shiki-header .shiki-actions .shiki-copy-btn {
-  border-color: #3e4c5a;
-  color: #8b949e;
-}
-[data-theme='dark'] .shiki-code-container .shiki-header .shiki-actions .shiki-copy-btn:hover {
-  background: #161b22;
-  border-color: #6e7681;
-  color: #c9d1d9;
-}
-[data-theme='dark'] .shiki-code-container .shiki-body-wrapper .shiki-body {
-  background: #0d1117;
-}
-[data-theme='dark'] .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-line-numbers {
-  background: #0d1117;
-  border-right-color: #30363d;
-}
-[data-theme='dark'] .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-line-numbers .line-number {
-  color: #6e7681;
-}
-[data-theme='dark'] .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-line-numbers .line-number:hover {
-  color: #c9d1d9;
-  background: rgba(110,118,129,0.4);
-}
-[data-theme='dark'] .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code {
-  background: #0d1117;
-}
-[data-theme='dark'] .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code .shiki-code-line {
-  color: #c9d1d9;
-}
-[data-theme='dark'] .shiki-code-container .shiki-footer {
-  background: #0d1117;
-  border-top-color: #30363d;
-}
-[data-theme='dark'] .shiki-code-container .shiki-footer .shiki-fold-btn {
-  border-color: #3e4c5a;
-  color: #8b949e;
-}
-[data-theme='dark'] .shiki-code-container .shiki-footer .shiki-fold-btn:hover {
-  background: #161b22;
-  border-color: #6e7681;
-  color: #c9d1d9;
-}
 /* 响应式设计 */
 @media (max-width: 768px) {
   .shiki-code-container {
     margin: 1em 0;
     border-radius: 6px;
-    overflow-x: auto;
   }
   .shiki-code-container .shiki-header {
     padding: 8px 12px;
@@ -2917,6 +2873,25 @@ body {
     min-width: 40px;
     width: 40px;
     padding: 10px 0;
-font-size
+    font-size: 14px;
+  }
+  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-line-numbers .line-number {
+    height: 22px;
+    min-height: 22px;
+    line-height: 22px;
+  }
+  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code {
+    padding: 10px 12px;
+    font-size: 14px;
+    line-height: 22px;
+  }
+  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="shiki-"],
+  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code [class*="line"],
+  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code span,
+  .shiki-code-container .shiki-body-wrapper .shiki-body .shiki-code div {
+    height: 22px;
+    min-height: 22px;
+    line-height: 22px;
+    font-size: 14px;
   }
 }
