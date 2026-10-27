@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>https://altsmile.github.io/categories/index.html</loc>
+    
+    <lastmod>2026-10-27</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://altsmile.github.io/tags/index.html</loc>
+    
+    <lastmod>2026-10-27</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://altsmile.github.io/2025/12/29/%E5%B0%9D%E8%AF%95%E5%86%99U%E6%A0%A1%E5%9B%AD%E8%87%AA%E5%8A%A8%E5%8C%96%E8%84%9A%E6%9C%AC/</loc>
+    
+    <lastmod>2026-01-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://altsmile.github.io/2025/12/25/%E5%9C%A8hexo%E7%9A%84NexT%E4%B8%BB%E9%A2%98%E4%B8%8A%E4%B8%8A%E4%BC%A0%E9%9F%B3%E4%B9%90%E5%B9%B6%E8%AE%BE%E6%92%AD%E6%94%BE%E5%99%A8/</loc>
+    
+    <lastmod>2025-12-27</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://altsmile.github.io/sitemap-xml/index.html</loc>
+    
+    <lastmod>2025-12-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://altsmile.github.io/about/index.html</loc>
+    
+    <lastmod>2025-12-24</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+
+  <url>
+    <loc>https://altsmile.github.io/</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  
+  <url>
+    <loc>https://altsmile.github.io/tags/Python/</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://altsmile.github.io/tags/%E5%BC%80%E5%8F%91/</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://altsmile.github.io/tags/hexo/</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+
+  
+</urlset>
